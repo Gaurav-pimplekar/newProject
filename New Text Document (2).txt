@@ -1,0 +1,175 @@
+Language you are using: JAVA
+Runtime Complexity of your solution: o(n)
+Space Complexity of your solution: o(1)
+Write your code below (continue on back if needed):
+
+1)class HelloWorld {
+    
+    public boolean isPalindrome(String str){
+        
+        for(int i=0; i<str.length()/2; i++){
+            if(str.charAt(i) != str.charAt(str.length() - (i+1))){
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    public static void main(String[] args) {
+        
+        String str = "malayalam";
+        System.out.println(new HelloWorld().isPalindrome(str));
+    }
+}
+
+
+2)Language you are using: java
+Runtime Complexity of your solution: o(n) 
+Space Complexity of your solution: o(n)
+Write your code below (continue on back if needed):
+
+import java.util.*;
+class HelloWorld {
+    
+    public static List<Integer> findFraudulentTransactions(List<Transaction> transactions) {
+        Set<Integer> fraudulentIds = new HashSet<>();
+        Map<Integer, Transaction> lastTransaction = new HashMap<>();
+
+        for (Transaction transaction : transactions) {
+            int transId = transaction.id;
+            int cardId = transaction.cardId;
+            double amount = transaction.amount;
+            String city = transaction.city;
+            int time = transaction.time;
+
+            if (amount >= 10000) {
+                fraudulentIds.add(transId);
+            }
+
+            
+            if (lastTransaction.containsKey(cardId)) {
+                Transaction lastTrans = lastTransaction.get(cardId);
+                if (time - lastTrans.time <= 30 && !city.equals(lastTrans.city)) {
+                    fraudulentIds.add(transId);
+                }
+            }
+
+            
+            lastTransaction.put(cardId, transaction);
+        }
+
+        return new ArrayList<>(fraudulentIds);
+    }
+    
+    public static void main(String[] args) {
+        List<Transaction> transactions = Arrays.asList(
+            new Transaction(1, 1000, 500.00, "Vadodara", 0),
+            new Transaction(2, 1000, 500.00, "Mumbai", 5),
+            new Transaction(3, 1001, 500.00, "Mumbai", 10),
+            new Transaction(4, 1001, 10000.00, "Mumbai", 10)
+        );
+
+        System.out.println(findFraudulentTransactions(transactions));
+    }
+}
+
+
+
+class Transaction {
+    int id;
+    int cardId;
+    double amount;
+    String city;
+    int time;
+
+    public Transaction(int id, int cardId, double amount, String city, int time) {
+        this.id = id;
+        this.cardId = cardId;
+        this.amount = amount;
+        this.city = city;
+        this.time = time;
+    }
+}
+
+
+3)
+Language you are using: java
+Runtime Complexity of your Solution: o(1)
+Space Complexity of your Solution: o(n + m)
+
+
+import java.util.*;
+class UndergroundSystem {
+    
+    private Map<Integer, CheckInData> checkInMap;
+    private Map<String, TravelData> travelTimesMap;
+
+
+    public UndergroundSystem() {
+        checkInMap = new HashMap<>();
+        travelTimesMap = new HashMap<>();
+    }
+
+    
+    public void checkIn(int id, String stationName, int t) {
+        checkInMap.put(id, new CheckInData(stationName, t));
+    }
+
+    
+    public void checkOut(int id, String stationName, int t) {
+        CheckInData checkInData = checkInMap.get(id);
+        String startStation = checkInData.stationName;
+        int checkInTime = checkInData.checkInTime;
+
+        String routeKey = startStation + "->" + stationName;
+        int travelTime = t - checkInTime;
+
+        TravelData travelData = travelTimesMap.getOrDefault(routeKey, new TravelData(0, 0));
+        travelData.totalTime += travelTime;
+        travelData.tripCount += 1;
+
+        travelTimesMap.put(routeKey, travelData);
+
+        
+        checkInMap.remove(id);
+    }
+
+    
+    public double getAverageTime(String startStation, String endStation) {
+        String routeKey = startStation + "->" + endStation;
+        TravelData travelData = travelTimesMap.get(routeKey);
+
+        return (double) travelData.totalTime / travelData.tripCount;
+    }
+
+    
+    private static class CheckInData {
+        String stationName;
+        int checkInTime;
+
+        CheckInData(String stationName, int checkInTime) {
+            this.stationName = stationName;
+            this.checkInTime = checkInTime;
+        }
+    }
+
+        private static class TravelData {
+        int totalTime;
+        int tripCount;
+
+        TravelData(int totalTime, int tripCount) {
+            this.totalTime = totalTime;
+            this.tripCount = tripCount;
+        }
+    }
+
+    public static void main(String[] args) {
+        UndergroundSystem system = new UndergroundSystem();
+        system.checkIn(1, "A", 3);
+        system.checkIn(2, "A", 8);
+        system.checkOut(1, "B", 10);
+        system.checkOut(2, "B", 15);
+        System.out.println(system.getAverageTime("A", "B"));
+    }
+}
