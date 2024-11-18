@@ -518,37 +518,9 @@ router.put("/trip/active", verifyToken, async (req, res) => {
     }
 
     // Create a new history record to mark the trip as completed
-    const trip = await History.create({
-      driver: req.pair.driver,
-      vehicle: req.pair.vehicle,
-      passengers: req.pair.passengers,
-      canceledBy: req.pair.canceledBy,
-      status: "active"
-    });
+    const trip = await Pair.findByIdAndUpdate(req.pair._id, {status:"active"});
 
-    console.log(req.pair);
-
-    // Remove the driver assignment from all passengers
-    const updateEmployeeResult = await Employee.updateMany(
-      { _id: { $in: req.pair.passengers } },
-      { driver: null }
-    );
-
-
-    // Update the pair to clear canceledBy and passengers
-    const updatedPair = await Pair.findByIdAndUpdate(req.pair._id, {
-      canceledBy: [],
-      passengers: []
-    });
-
-    // If pair was not updated, handle the case
-    if (!updatedPair) {
-      return res.status(500).json({
-        success: false,
-        message: "Failed to update pair details. Try again later."
-      });
-    }
-
+    
     // Send success response with trip data
     res.status(200).json({
       success: true,

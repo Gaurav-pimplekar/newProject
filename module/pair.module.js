@@ -19,7 +19,8 @@ const pairSchema = new mongoose.Schema({
         },
         status:{
             type:String,
-            enum: ["cancelByEmployee", "Employee Not Reach","inCab", "outCab", "waiting"]
+            enum: ["cancelByEmployee", "Employee Not Reach","inCab", "outCab", "waiting"],
+            default:"waiting"
         }
     }],
     status: {
