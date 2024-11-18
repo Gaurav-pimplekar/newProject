@@ -7,7 +7,6 @@ import employeeRouter from "./routes/employee.route.js"
 import vehicleRouter from "./routes/vehicle.route.js"
 import driverRouter from "./routes/driver.route.js"
 import pairRouter from "./routes/pair.route.js"
-import tripRouter from "./routes/trip.route.js"
 import authRouter from "./routes/auth.route.js"
 import locationRouter from "./routes/location.route.js";
 import uploadRouter from "./controller/upload.controller.js"
@@ -37,7 +36,6 @@ app.use(employeeRouter);
 app.use(vehicleRouter);
 app.use(driverRouter);
 app.use(pairRouter);
-app.use(tripRouter);
 app.use(authRouter);
 app.use(locationRouter);
 app.use(uploadRouter);

@@ -460,7 +460,8 @@ router.put("/trip/complete", verifyToken, async (req, res) => {
     // Update the pair to clear canceledBy and passengers
     const updatedPair = await Pair.findByIdAndUpdate(req.pair._id, {
       canceledBy: [],
-      passengers: []
+      passengers: [],
+      status:"upcoming"
     });
 
     // If pair was not updated, handle the case
