@@ -295,9 +295,10 @@ router.get("/getPairs", async (req, res) => {
 
 
 
-router.patch("/pairEmployee/:user/:pairId", async (req, res) => {
+router.patch("/pairEmployee/:user/:pairId",verifyToken, async (req, res) => {
   try {
-    const { user, pairId } = req.params;
+    const { user } = req.params;
+    const pairId = req.pair._id;
 
     // Find the employee by user ID
     const employee = await Employee.findById(user);
@@ -325,7 +326,7 @@ router.patch("/pairEmployee/:user/:pairId", async (req, res) => {
     const updatedEmployee = await Employee.findByIdAndUpdate(user, { driver: pairId }, { new: true });
 
     // Add the employee to the passengers array in the pair
-    const updatedPair = await Pair.findByIdAndUpdate(pairId, { $push: { passengers: { id: updatedEmployee._id } } }, { new: true });
+    const updatedPair = await Pair.findByIdAndUpdate(req.pair._id, { $push: { passengers: { id: updatedEmployee._id } } }, { new: true });
 
     console.log("pair : ",req.pair,"updatePair : ", updatedPair);
     // Optional: Check for existing trip, if not create a new one
