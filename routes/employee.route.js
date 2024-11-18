@@ -449,7 +449,7 @@ router.patch("/update/employee/:id", async (req, res) => {
 
 
 
-app.post("/employee/register", async (req, res) => {
+router.post("/employee/register", async (req, res) => {
   try {
     const {
       name,
