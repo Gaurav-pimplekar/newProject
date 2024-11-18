@@ -4,8 +4,8 @@ import { Employee } from "../module/employee.module.js";
 import Pair from "../module/pair.module.js";
 
 export const verifyToken = async (req, res, next) => {
-    const token = req.headers.authorization?.split(" ")[1];
-    console.log("token", token)
+    const token = req.headers.authorization;
+
     try {
         if (!token) {
             return res.status(400).json({
@@ -47,7 +47,7 @@ export const verifyToken = async (req, res, next) => {
             const pair = await Pair.findOne({ passengers: employee._id })
                 .populate("vehicle")
                 .populate("driver")
-                .populate({ path: "passengers", model: "Employee" });
+                .populate({ path: "passengers.id", model: "Employee" });
             req.pair = pair;
         } else {
             // If driver exists, attach the driver and pair information to the request

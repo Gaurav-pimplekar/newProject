@@ -13,7 +13,7 @@ router.post('/verify-otp', verifyOtp);
 
 router.post('/login', async (req, res) => {
     const { mobile, password } = req.body;  // `password` will be used to validate the user
-    console.log(req.body)
+
     try {
         // Check if the password is correct
         if (password !== "password") {

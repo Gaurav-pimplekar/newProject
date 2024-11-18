@@ -6,11 +6,11 @@ const tripSchema = new mongoose.Schema({
         ref: "Pair",
         required: true,
     },
-    // status: {
-    //     type: String,
-    //     enum: ["active", "completed", "upcoming"],
-    //     default: "active",
-    // },
+    status: {
+        type: String,
+        enum: ["active", "completed", "upcoming"],
+        default: "active",
+    },
     canceledBy: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Employee",

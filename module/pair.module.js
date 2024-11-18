@@ -2,19 +2,29 @@ import mongoose, { Schema } from "mongoose";
 
 
 const pairSchema = new mongoose.Schema({
-    vehicle:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Vehicle",
-        unique:true,
+    vehicle: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Vehicle",
+        unique: true,
     },
-    driver:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Driver",
-        unique:true
+    driver: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Driver",
+        unique: true
     },
-    passengers:[{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Employee",
+    passengers: [{
+        id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Employee"
+        },
+        isDrop: {
+            type: Boolean,
+            default: false
+        },
+        isIn: {
+            type: Boolean,
+            default: false
+        }
     }],
     status: {
         type: String,
@@ -25,7 +35,7 @@ const pairSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Employee",
     }],
-},{
+}, {
     timestamps: true
 })
 

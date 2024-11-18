@@ -42,24 +42,24 @@ router.post(
         });
       }
 
-      // // Check if required files are uploaded
-      // const requiredFiles = [
-      //     'license_back_photo', 
-      //     'license_front_photo', 
-      //     'id_proof_front_photo', 
-      //     'id_proof_back_photo', 
-      //     'pcc_document'
-      // ];
+      // Check if required files are uploaded
+      const requiredFiles = [
+          'license_back_photo', 
+          'license_front_photo', 
+          'id_proof_front_photo', 
+          'id_proof_back_photo', 
+          'pcc_document'
+      ];
 
-      // const missingFiles = requiredFiles.filter(file => !req.files[file]);
-      // if (missingFiles.length > 0) {
-      //     return res.status(400).json({
-      //         message: "Missing required files",
-      //         status: "error",
-      //         success: false,
-      //         data: missingFiles,
-      //     });
-      // }
+      const missingFiles = requiredFiles.filter(file => !req.files[file]);
+      if (missingFiles.length > 0) {
+          return res.status(400).json({
+              message: "Missing required files",
+              status: "error",
+              success: false,
+              data: missingFiles,
+          });
+      }
 
       // Log driver name for debugging
       console.log(`Adding driver: ${req.body.name}`);

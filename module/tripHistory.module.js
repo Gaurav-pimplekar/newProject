@@ -16,8 +16,7 @@ const tripHistoriSchema = new mongoose.Schema({
     }],
     status: {
         type: String,
-        enum: ["active", "completed", "upcoming"],
-        default: "upcoming",
+        default: "completed",
     },
     canceledBy: [{
         type: mongoose.Schema.Types.ObjectId,
