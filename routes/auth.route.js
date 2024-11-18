@@ -29,7 +29,7 @@ router.post('/login', async (req, res) => {
         const driver = await Driver.findOne({ mobile });
         if (driver) {
             // Generate JWT token for the driver
-            const token = jwt.sign({ mobile }, process.env.SECRET_KEY, { expiresIn: '1h' });
+            const token = jwt.sign({ mobile }, process.env.SECRET_KEY, { expiresIn: '10h' });
 
             // Find the paired vehicle (if any)
             const pair = await Pair.findOne({ driver: driver._id }).populate("vehicle").populate("driver");

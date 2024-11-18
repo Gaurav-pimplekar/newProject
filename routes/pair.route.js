@@ -575,7 +575,7 @@ router.put("/cancel/employee/:id", verifyToken, async (req, res) => {
 
     // Check if the employee is part of the passengers array
     const employeeIndex = pair.passengers.findIndex(
-      (passenger) => passenger.toString() === id
+      (passenger) => passenger.id.toString() === id
     );
 
     // If employee is not found in passengers, return an error
@@ -603,15 +603,16 @@ router.put("/cancel/employee/:id", verifyToken, async (req, res) => {
       });
     }
 
+    const pairId = new mongoose.Types.ObjectId(req.pair._id);
     // Add the employee to the canceledBy array
-    pair.canceledBy.push(id);
-    await pair.save(); // Save the updated pair with the cancellation details
+    const updatedPair = await Pair.findByIdAndUpdate(pairId, { $push: { canceledBy: { id: id, status:"Employee Not Reach" } } }, { new: true });
+    console.log(updatedPair,req.pair, req.pair._id);
 
     res.status(200).json({
       message: "Trip canceled successfully for employee",
       status: 200,
       success: true,
-      data: pair
+      data: updatedPair
     });
   } catch (error) {
     console.error('Error canceling trip for employee:', error);
