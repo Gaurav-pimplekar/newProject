@@ -327,6 +327,7 @@ router.patch("/pairEmployee/:user/:pairId", async (req, res) => {
     // Add the employee to the passengers array in the pair
     const updatedPair = await Pair.findByIdAndUpdate(pairId, { $push: { passengers: { id: updatedEmployee._id } } }, { new: true });
 
+    console.log("pair : ",req.pair,"updatePair : ", updatedPair);
     // Optional: Check for existing trip, if not create a new one
     // const trip = await Trip.findOne({ pair: pairId, status: "upcoming" });
     // if (!trip) {
