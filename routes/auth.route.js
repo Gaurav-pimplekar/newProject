@@ -1,5 +1,5 @@
 import express from "express"
-import { sendOtp, verifyOtp } from '../controller/auth.controller.js';
+import { sendOtp, verifyOtp, getOtp } from '../controller/auth.controller.js';
 import { Driver } from "../module/driver.module.js";
 import { Employee } from "../module/employee.module.js";
 import Pair from "../module/pair.module.js";
@@ -9,6 +9,7 @@ const router = express.Router();
 
 router.post('/send-otp', sendOtp);
 router.post('/verify-otp', verifyOtp);
+router.get("/get-otp", getOtp);
 
 
 router.post('/login', async (req, res) => {

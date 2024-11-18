@@ -46,22 +46,92 @@ export const sendOtp = async (req, res) => {
 
 // Verify OTP
 export const verifyOtp = async (req, res) => {
-  const { otp } = req.body;
-  if (!otp) return res.status(400).json({ message: 'Email and OTP are required', otpVerified: false });
+  const { otp, email } = req.body;
+  
+  if (!otp) {
+    return res.status(400).json({
+      message: 'Email and OTP are required',
+      status: 400,
+      success: false,
+      data: { otpVerified: false },
+    });
+  }
 
   try {
     // Check if the OTP is valid
-    const record = await Otp.findOne({ otp });
-    if (!record) return res.status(400).json({ message: 'Invalid or expired OTP' , otpVerified: false});
+    const record = await Otp.findOne({ otp, email });
+    if (!record) {
+      return res.status(400).json({
+        message: 'Invalid or expired OTP',
+        status: 400,
+        success: false,
+        data: { otpVerified: false },
+      });
+    }
 
-    // OTP is valid, delete it from database
-    await Otp.deleteOne({ otp });
+    // OTP is valid, delete it from the database
+    await Otp.deleteOne({ otp, email });
 
-    res.status(200).json({ message: 'OTP verified successfully', otpVerified: true });
+    res.status(200).json({
+      message: 'OTP verified successfully',
+      status: 200,
+      success: true,
+      data: { otpVerified: true },
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error verifying OTP', error , otpVerified: false});
+    res.status(500).json({
+      message: 'Error verifying OTP',
+      status: 500,
+      success: false,
+      data: { error, otpVerified: false },
+    });
   }
 };
+
+
+export const getOtp = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({
+      message: 'Email is required',
+      status: 400,
+      success: false,
+      data: {},
+    });
+  }
+
+  try {
+    // Fetch the OTP associated with the email
+    const otpRecord = await Otp.findOne({ email });
+    const otps = await Otp.find({});
+    console.log(otps);
+
+    if (!otpRecord) {
+      return res.status(404).json({
+        message: 'No OTP found for the provided email',
+        status: 404,
+        success: false,
+        data: {},
+      });
+    }
+
+    res.status(200).json({
+      message: 'OTP retrieved successfully',
+      status: 200,
+      success: true,
+      data: { otp: otpRecord.otp, email: otpRecord.email },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error retrieving OTP',
+      status: 500,
+      success: false,
+      data: { error },
+    });
+  }
+};
+
 
 
 
