@@ -456,13 +456,6 @@ router.put("/trip/complete", verifyToken, async (req, res) => {
       { driver: null }
     );
 
-    // If no employees were updated, handle the case
-    if (updateEmployeeResult.modifiedCount === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No passengers found to update driver data."
-      });
-    }
 
     // Update the pair to clear canceledBy and passengers
     const updatedPair = await Pair.findByIdAndUpdate(req.pair._id, {
@@ -541,13 +534,6 @@ router.put("/trip/active", verifyToken, async (req, res) => {
       { driver: null }
     );
 
-    // If no employees were updated, handle the case
-    if (updateEmployeeResult.modifiedCount === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No passengers found to update driver data."
-      });
-    }
 
     // Update the pair to clear canceledBy and passengers
     const updatedPair = await Pair.findByIdAndUpdate(req.pair._id, {
