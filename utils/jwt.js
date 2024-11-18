@@ -44,7 +44,7 @@ export const verifyToken = async (req, res, next) => {
         if (!driver) {
             // If employee exists, attach the employee and pair information to the request
             req.employee = employee;
-            const pair = await Pair.findOne({ passengers: employee._id })
+            const pair = await Pair.findOne({ "passengers.id": employee._id })
                 .populate("vehicle")
                 .populate("driver")
                 .populate({ path: "passengers.id", model: "Employee" });
