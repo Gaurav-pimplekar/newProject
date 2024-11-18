@@ -53,12 +53,12 @@ export const verifyToken = async (req, res, next) => {
         } else {
             // If driver exists, attach the driver and pair information to the request
             req.driver = driver;
+            
             const pair = await Pair.findOne({ driver })
                 .populate("vehicle")
                 .populate("driver")
-                .populate({ path: "passengers.id", model: "Employee" })
-                .populate({ path: "canceledBy.id", model: "Employee" });
             req.pair = pair;
+            req.employee = employee
         }
 
         next();

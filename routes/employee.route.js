@@ -88,6 +88,22 @@ router.get("/getEmployees", async (req, res) => {
 });
 
 
+router.get("/login/driver", verifyToken, async (req, res) => {
+  try {
+
+    res.json({
+      pair: req.pair,
+      employee: req.employee
+    })
+
+  } catch (error) {
+    console.log(error);
+    res.json({
+      message: error.message
+    })
+  }
+})
+
 router.delete("/deleteEmployee/:id", async (req, res) => {
   try {
     const { id } = req.params;
