@@ -448,4 +448,74 @@ router.patch("/update/employee/:id", async (req, res) => {
 });
 
 
+
+app.post("/employee/register", async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      phone_number,
+      gender,
+      shift_time,
+      pickup_location,
+      drop_location,
+      longitude,
+      latitude,
+    } = req.body;
+
+    // Validate required fields
+    if (!name || !phone_number || !gender || !shift_time || !pickup_location || !drop_location) {
+      return res.status(400).json({
+        message: "All required fields must be provided.",
+        status: 400,
+        success: false,
+        data: null,
+      });
+    }
+
+    // Create a new employee
+    const newEmployee = new Employee({
+      name,
+      email,
+      phone_number,
+      gender,
+      shift_time,
+      pickup_location,
+      drop_location,
+      longitude,
+      latitude,
+    });
+
+    // Save employee to database
+    const savedEmployee = await newEmployee.save();
+
+    // Respond with success
+    res.status(201).json({
+      message: "Employee registered successfully.",
+      status: 201,
+      success: true,
+      data: savedEmployee,
+    });
+  } catch (error) {
+    // Handle duplicate key error for phone_number (unique constraint)
+    if (error.code === 11000 && error.keyValue.phone_number) {
+      return res.status(400).json({
+        message: "Phone number already exists.",
+        status: 400,
+        success: false,
+        data: null,
+      });
+    }
+
+    // General error response
+    res.status(500).json({
+      message: "An error occurred while registering the employee.",
+      status: 500,
+      success: false,
+      data: null,
+      error: error.message,
+    });
+  }
+});
+
 export default router;
