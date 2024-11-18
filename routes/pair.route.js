@@ -514,6 +514,95 @@ router.put("/trip/complete", verifyToken, async (req, res) => {
 });
 
 
+router.put("/trip/active", verifyToken, async (req, res) => {
+  try {
+    // Check if pair data exists before proceeding
+    if (!req.pair) {
+      return res.status(400).json({
+        success: false,
+        message: "No pair data found. Unable to complete the trip."
+      });
+    }
+
+    // Create a new history record to mark the trip as completed
+    const trip = await History.create({
+      driver: req.pair.driver,
+      vehicle: req.pair.vehicle,
+      passengers: req.pair.passengers,
+      canceledBy: req.pair.canceledBy,
+      status: "active"
+    });
+
+    console.log(req.pair);
+
+    // Remove the driver assignment from all passengers
+    const updateEmployeeResult = await Employee.updateMany(
+      { _id: { $in: req.pair.passengers } },
+      { driver: null }
+    );
+
+    // If no employees were updated, handle the case
+    if (updateEmployeeResult.modifiedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No passengers found to update driver data."
+      });
+    }
+
+    // Update the pair to clear canceledBy and passengers
+    const updatedPair = await Pair.findByIdAndUpdate(req.pair._id, {
+      canceledBy: [],
+      passengers: []
+    });
+
+    // If pair was not updated, handle the case
+    if (!updatedPair) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to update pair details. Try again later."
+      });
+    }
+
+    // Send success response with trip data
+    res.status(200).json({
+      success: true,
+      message: "Trip actived successfully",
+      trip
+    });
+
+  } catch (error) {
+    console.error('Error completing trip:', error);
+
+    // Check for specific error types
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: "Validation error: " + error.message
+      });
+    }
+
+    // Handle MongoDB connection errors
+    if (error.name === 'MongoError') {
+      return res.status(500).json({
+        success: false,
+        message: "Database error: " + error.message
+      });
+    }
+
+    // General error handling for unexpected errors
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message
+    });
+  }
+});
+
+
+
+
+
+
 
 
 router.put("/cancel/employee/:id", verifyToken, async (req, res) => {

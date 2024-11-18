@@ -17,13 +17,9 @@ const pairSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee"
         },
-        isDrop: {
-            type: Boolean,
-            default: false
-        },
-        isIn: {
-            type: Boolean,
-            default: false
+        status:{
+            type:String,
+            enum: ["cancelByEmployee", "Employee Not Reach","inCab", "outCab", "waiting"]
         }
     }],
     status: {
@@ -32,8 +28,14 @@ const pairSchema = new mongoose.Schema({
         default: "upcoming",
     },
     canceledBy: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Employee",
+        id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Employee"
+        },
+        status:{
+            type:String,
+            enum: ["cancelByEmployee", "Employee Not Reach"]
+        }
     }],
 }, {
     timestamps: true
