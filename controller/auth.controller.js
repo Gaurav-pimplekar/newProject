@@ -31,14 +31,14 @@ export const sendOtp = async (req, res) => {
     await Otp.create({ email, otp });
 
     // Send OTP via email
-    const  info = await transporter.sendMail({
-      from: "leola.zulauf64@ethereal.email",
-      to: email,
-      subject: 'Your OTP Code',
-      text: `Your OTP code is ${otp}`,
-    });
-    console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
-    res.status(200).json({ message: 'OTP sent to email'+email });
+    // const  info = await transporter.sendMail({
+    //   from: "leola.zulauf64@ethereal.email",
+    //   to: email,
+    //   subject: 'Your OTP Code',
+    //   text: `Your OTP code is ${otp}`,
+    // });
+    // console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
+    res.status(200).json({ message: 'OTP sent successfully', status: 200, success: true, data: null });
   } catch (error) {
     res.status(500).json({ message: 'Error sending OTP', error });
   }
