@@ -756,4 +756,80 @@ cros.schedule("0 0 * * *", async () => {
 
 })
 
+
+
+router.post('/trip/history', verifyToken, async (req, res) => {
+  try {
+      const { startDate, endDate } = req.query;
+
+      if (!startDate || !endDate) {
+          return res.status(400).json({
+              message: 'Both startDate and endDate are required.',
+              status: 400,
+              success: false,
+              data: null,
+          });
+      }
+
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+          return res.status(400).json({
+              message: 'Invalid date format.',
+              status: 400,
+              success: false,
+              data: null,
+          });
+      }
+
+      // Query for History based on authenticated user (Driver or Employee)
+      const query = {
+          createdAt: {
+              $gte: start,
+              $lte: end,
+          },
+      };
+
+      if (req.driver) {
+          // If the user is a driver, filter history by driver
+          query.driver = req.driver._id;
+      } else if (req.employee) {
+          // If the user is an employee, filter history by passengers (employee)
+          query.passengers = req.employee._id;
+      } else {
+          return res.status(401).json({
+              message: 'Unauthorized user.',
+              status: 401,
+              success: false,
+              data: null,
+          });
+      }
+
+      // Fetch the history records based on the above query
+      const historyRecords = await History.find(query)
+          .populate('vehicle')
+          .populate('driver')
+          .populate('passengers')
+          .populate('canceledBy');
+
+      return res.status(200).json({
+          message: 'Trip history fetched successfully.',
+          status: 200,
+          success: true,
+          data: historyRecords,
+      });
+  } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+          message: 'Error fetching history records.',
+          status: 500,
+          success: false,
+          data: null,
+          error: error.message,
+      });
+  }
+});
+
+
 export default router;
