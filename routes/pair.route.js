@@ -601,10 +601,6 @@ router.put("/trip/active", verifyToken, async (req, res) => {
 
 
 
-
-
-
-
 router.put("/cancel/employee/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
