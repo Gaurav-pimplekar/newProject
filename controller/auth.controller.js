@@ -70,7 +70,7 @@ export const verifyOtp = async (req, res) => {
     }
 
     // OTP is valid, delete it from the database
-    await Otp.deleteOne({ otp, email });
+    // await Otp.deleteOne({ otp, email });
 
     res.status(200).json({
       message: 'OTP verified successfully',
@@ -91,6 +91,8 @@ export const verifyOtp = async (req, res) => {
 
 export const getOtp = async (req, res) => {
   const { email } = req.body;
+  const otps = await Otp.find({});
+  console.log(otps);
 
   if (!email) {
     return res.status(400).json({
