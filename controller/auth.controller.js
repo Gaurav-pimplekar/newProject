@@ -122,7 +122,7 @@ export const getOtp = async (req, res) => {
       message: 'OTP retrieved successfully',
       status: 200,
       success: true,
-      data: { otp: otpRecord.otp, email: otpRecord.email },
+      data: { otp: otpRecord.otp, email: otpRecord.email, createdAt: otpRecord.createdAt },
     });
   } catch (error) {
     res.status(500).json({
