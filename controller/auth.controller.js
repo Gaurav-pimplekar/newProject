@@ -4,6 +4,7 @@ import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import { Employee } from '../module/employee.module.js';
 import { Driver } from '../module/driver.module.js';
+import Pair from '../module/pair.module.js';
 
 // Configure nodemailer
 const transporter = nodemailer.createTransport({
@@ -71,6 +72,8 @@ export const verifyOtp = async (req, res) => {
 
     // OTP is valid, delete it from the database
     // await Otp.deleteOne({ otp, email });
+    const employee = await Employee.findOne({email});
+    await Pair.updateOne({"passengers.id": employee._id, "_id": req.pair._id}, { $set: { "passengers.$.status": "inCab" } })
 
     res.status(200).json({
       message: 'OTP verified successfully',

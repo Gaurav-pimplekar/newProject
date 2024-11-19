@@ -398,15 +398,19 @@ router.patch("/unpairEmployee/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
+    // Convert the `id` from string to ObjectId
+    const objectId =id
+
     // Update all pairs by removing the passenger with the given id
     const result = await Pair.updateMany(
-      { passengers: id, status: "upcoming" }, // Find all pairs with this passenger
-      { $pull: { passengers: id } } // Remove the passenger ID from the passengers array
+      { "passengers.id": objectId }, // Find all pairs with this passenger
+      { $pull: { passengers: { id: objectId } } } // Remove the passenger object from the passengers array
     );
+    console.log(result);
 
     // Remove the driver's assignment from the employee
-    await Employee.findByIdAndUpdate(id, { driver: null });
-
+    const emp = await Employee.findByIdAndUpdate(objectId, { driver: null });
+    console.log(emp, id);
     // Send success response
     return res.status(200).json({
       success: true,
@@ -427,7 +431,6 @@ router.patch("/unpairEmployee/:id", async (req, res) => {
     });
   }
 });
-
 
 
 router.put("/trip/complete", verifyToken, async (req, res) => {
@@ -864,5 +867,53 @@ router.post('/trip/history', verifyToken, async (req, res) => {
   }
 });
 
+
+
+router.patch("/updatePassengerStatusOutCab/:passengerId",verifyToken, async (req, res) => {
+  const { passengerId } = req.params;  // Get the passengerId from the URL
+  const pairId = req.pair._id; // Get the pairId from the token (assumed to be set earlier in the auth middleware)
+
+  if (!pairId) {
+    return res.status(400).json({
+      success: false,
+      message: "Pair ID is missing in the token"
+    });
+  }
+
+  try {
+    // Convert passengerId and pairId to ObjectIds (in case they are not in ObjectId format)
+    const passengerObjectId = mongoose.Types.ObjectId(passengerId);
+    const pairObjectId = mongoose.Types.ObjectId(pairId);
+
+    // Find the pair and update the passenger's status to "outCab"
+    const result = await Pair.updateOne(
+      { _id: pairObjectId, "passengers.id": passengerObjectId }, // Match the specific pair and passenger
+      { $set: { "passengers.$.status": "outCab" } } // Update the passenger's status to 'outCab'
+    );
+
+    if (result.nModified === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Pair or Passenger not found"
+      });
+    }
+
+    // If the update was successful, return a success response
+    return res.status(200).json({
+      success: true,
+      message: "Passenger status updated to 'outCab'",
+    });
+
+  } catch (error) {
+    console.error('Error updating passenger status:', error);
+
+    // Send error response if there was an issue
+    return res.status(500).json({
+      success: false,
+      message: 'Error updating passenger status',
+      error: error.message
+    });
+  }
+});
 
 export default router;

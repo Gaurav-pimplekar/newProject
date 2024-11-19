@@ -534,4 +534,7 @@ router.post("/employee/register", async (req, res) => {
   }
 });
 
+
+router.patch("/drop")
+
 export default router;
