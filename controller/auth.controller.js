@@ -90,7 +90,9 @@ export const verifyOtp = async (req, res) => {
 
 
 export const getOtp = async (req, res) => {
-  const { email } = req.body;
+  // const { email } = req.body;
+  const { email } = req.employee
+  console.log("emila:", email)
   const otps = await Otp.find({});
   console.log(otps);
 

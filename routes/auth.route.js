@@ -4,12 +4,13 @@ import { Driver } from "../module/driver.module.js";
 import { Employee } from "../module/employee.module.js";
 import Pair from "../module/pair.module.js";
 import jwt from "jsonwebtoken"
+import { verifyToken } from "../utils/jwt.js";
 
 const router = express.Router();
 
 router.post('/send-otp', sendOtp);
 router.post('/verify-otp', verifyOtp);
-router.get("/get-otp", getOtp);
+router.get("/get-otp", verifyToken, getOtp);
 
 
 router.post('/login', async (req, res) => {
