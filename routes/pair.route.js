@@ -295,7 +295,7 @@ router.get("/getPairs", async (req, res) => {
 
 
 
-router.patch("/pairEmployee/:user/:pairId",verifyToken, async (req, res) => {
+router.patch("/pairEmployee/:user/:pairId", verifyToken, async (req, res) => {
   try {
     const { user } = req.params;
     const pairId = req.pair._id;
@@ -328,7 +328,7 @@ router.patch("/pairEmployee/:user/:pairId",verifyToken, async (req, res) => {
     // Add the employee to the passengers array in the pair
     const updatedPair = await Pair.findByIdAndUpdate(req.pair._id, { $push: { passengers: { id: updatedEmployee._id } } }, { new: true });
 
-    console.log("pair : ",req.pair,"updatePair : ", updatedPair);
+    console.log("pair : ", req.pair, "updatePair : ", updatedPair);
     // Optional: Check for existing trip, if not create a new one
     // const trip = await Trip.findOne({ pair: pairId, status: "upcoming" });
     // if (!trip) {
@@ -463,7 +463,7 @@ router.put("/trip/complete", verifyToken, async (req, res) => {
     const updatedPair = await Pair.findByIdAndUpdate(req.pair._id, {
       canceledBy: [],
       passengers: [],
-      status:"upcoming"
+      status: "upcoming"
     });
 
     // If pair was not updated, handle the case
@@ -521,9 +521,9 @@ router.put("/trip/active", verifyToken, async (req, res) => {
     }
 
     // Create a new history record to mark the trip as completed
-    const trip = await Pair.findByIdAndUpdate(req.pair._id, {status:"active"});
+    const trip = await Pair.findByIdAndUpdate(req.pair._id, { status: "active" });
 
-    
+
     // Send success response with trip data
     res.status(200).json({
       success: true,
@@ -608,8 +608,13 @@ router.put("/cancel/employee/:id", verifyToken, async (req, res) => {
 
     const pairId = new mongoose.Types.ObjectId(req.pair._id);
     // Add the employee to the canceledBy array
-    const updatedPair = await Pair.findByIdAndUpdate(pairId, { $push: { canceledBy: { id: id, status:"Employee Not Reach" } } }, { new: true });
-    console.log(updatedPair,req.pair, req.pair._id);
+    const updatedPair = await Pair.findByIdAndUpdate(pairId, { $push: { canceledBy: { id: id, status: "Employee Not Reach" } } }, { new: true })
+      .populate("vehicle")
+      .populate("driver")
+      .populate({ path: "passengers.id", model: "Employee" })
+      .populate({ path: "canceledBy.id", model: "Employee" });
+
+    console.log(updatedPair, req.pair, req.pair._id);
 
     res.status(200).json({
       message: "Trip canceled successfully for employee",
@@ -760,74 +765,74 @@ cros.schedule("0 0 * * *", async () => {
 
 router.post('/trip/history', verifyToken, async (req, res) => {
   try {
-      const { startDate, endDate } = req.query;
+    const { startDate, endDate } = req.query;
 
-      if (!startDate || !endDate) {
-          return res.status(400).json({
-              message: 'Both startDate and endDate are required.',
-              status: 400,
-              success: false,
-              data: null,
-          });
-      }
-
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-
-      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-          return res.status(400).json({
-              message: 'Invalid date format.',
-              status: 400,
-              success: false,
-              data: null,
-          });
-      }
-
-      // Query for History based on authenticated user (Driver or Employee)
-      const query = {
-          createdAt: {
-              $gte: start,
-              $lte: end,
-          },
-      };
-
-      if (req.driver) {
-          // If the user is a driver, filter history by driver
-          query.driver = req.driver._id;
-      } else if (req.employee) {
-          // If the user is an employee, filter history by passengers (employee)
-          query.passengers = req.employee._id;
-      } else {
-          return res.status(401).json({
-              message: 'Unauthorized user.',
-              status: 401,
-              success: false,
-              data: null,
-          });
-      }
-
-      // Fetch the history records based on the above query
-      const historyRecords = await History.find(query)
-          .populate('vehicle')
-          .populate('driver')
-          .populate('passengers')
-          .populate('canceledBy');
-
-      return res.status(200).json({
-          message: 'Trip history fetched successfully.',
-          status: 200,
-          success: true,
-          data: historyRecords,
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        message: 'Both startDate and endDate are required.',
+        status: 400,
+        success: false,
+        data: null,
       });
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({
+        message: 'Invalid date format.',
+        status: 400,
+        success: false,
+        data: null,
+      });
+    }
+
+    // Query for History based on authenticated user (Driver or Employee)
+    const query = {
+      createdAt: {
+        $gte: start,
+        $lte: end,
+      },
+    };
+
+    if (req.driver) {
+      // If the user is a driver, filter history by driver
+      query.driver = req.driver._id;
+    } else if (req.employee) {
+      // If the user is an employee, filter history by passengers (employee)
+      query.passengers = req.employee._id;
+    } else {
+      return res.status(401).json({
+        message: 'Unauthorized user.',
+        status: 401,
+        success: false,
+        data: null,
+      });
+    }
+
+    // Fetch the history records based on the above query
+    const historyRecords = await History.find(query)
+      .populate('vehicle')
+      .populate('driver')
+      .populate('passengers')
+      .populate('canceledBy');
+
+    return res.status(200).json({
+      message: 'Trip history fetched successfully.',
+      status: 200,
+      success: true,
+      data: historyRecords,
+    });
   } catch (error) {
-      console.error(error);
-      return res.status(500).json({
-          message: 'Error fetching history records.',
-          status: 500,
-          success: false,
-          data: null,
-          error: error.message,
-      });
+    console.error(error);
+    return res.status(500).json({
+      message: 'Error fetching history records.',
+      status: 500,
+      success: false,
+      data: null,
+      error: error.message,
+    });
   }
 });
 
