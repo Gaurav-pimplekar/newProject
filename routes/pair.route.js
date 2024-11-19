@@ -891,6 +891,13 @@ router.patch("/updatePassengerStatusOutCab/:passengerId",verifyToken, async (req
       { $set: { "passengers.$.status": "outCab" } } // Update the passenger's status to 'outCab'
     );
 
+
+    const pair = await Pair.findById(req.pair._id).populate("vehicle")
+    .populate("driver")
+    .populate({ path: "passengers.id", model: "Employee" })
+    .populate({path: "canceledBy.id", model: "Employee" })
+
+
     if (result.nModified === 0) {
       return res.status(404).json({
         success: false,
@@ -902,6 +909,7 @@ router.patch("/updatePassengerStatusOutCab/:passengerId",verifyToken, async (req
     return res.status(200).json({
       success: true,
       message: "Passenger status updated to 'outCab'",
+      pair
     });
 
   } catch (error) {
