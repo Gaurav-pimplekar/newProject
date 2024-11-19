@@ -74,7 +74,12 @@ export const verifyOtp = async (req, res) => {
     await Otp.deleteOne({ otp, email });
     const employee = await Employee.findOne({email});
     const pair = await Pair.updateOne({"passengers.id": employee._id, "_id": req.pair._id}, { $set: { "passengers.$.status": "inCab" } }, {new: true})
+    .populate("vehicle")
+                .populate("driver")
+                .populate({ path: "passengers.id", model: "Employee" })
+                .populate({path: "canceledBy.id", model: "Employee" })
 
+    console.log(pair);
     res.status(200).json({
       message: 'OTP verified successfully',
       status: 200,
