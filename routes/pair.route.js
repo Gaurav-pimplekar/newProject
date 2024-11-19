@@ -520,7 +520,7 @@ router.put("/trip/active", verifyToken, async (req, res) => {
     }
 
     // Create a new history record to mark the trip as completed
-    const trip = await Pair.findByIdAndUpdate(req.pair._id, { status: "active" });
+    const trip = await Pair.findByIdAndUpdate(req.pair._id, { status: "active" }, {new: true});
 
 
     // Send success response with trip data
