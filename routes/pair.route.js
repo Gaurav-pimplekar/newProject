@@ -263,7 +263,7 @@ router.post("/addPair/:vehicle/:driver", async (req, res) => {
 router.get("/getPairs", async (req, res) => {
   try {
     // Fetch pairs along with populated vehicle and driver data
-    const pairs = await Pair.find({}).populate("vehicle").populate("driver");
+    const pairs = await Pair.find({}).populate("vehicle").populate("driver").populate({ path: "passengers.id", model: "Employee" }).populate({ path: "canceledBy.id", model: "Employee" });
 
     // Check if no pairs are found
     if (pairs.length === 0) {
@@ -295,10 +295,10 @@ router.get("/getPairs", async (req, res) => {
 
 
 
-router.patch("/pairEmployee/:user/:pairId", verifyToken, async (req, res) => {
+router.patch("/pairEmployee/:user/:pairId", async (req, res) => {
   try {
-    const { user } = req.params;
-    const pairId = req.pair._id;
+    const { user, pairId } = req.params;
+    //const pairId = req.pair._id;
 
     // Find the employee by user ID
     const employee = await Employee.findById(user);
@@ -326,9 +326,8 @@ router.patch("/pairEmployee/:user/:pairId", verifyToken, async (req, res) => {
     const updatedEmployee = await Employee.findByIdAndUpdate(user, { driver: pairId }, { new: true });
 
     // Add the employee to the passengers array in the pair
-    const updatedPair = await Pair.findByIdAndUpdate(req.pair._id, { $push: { passengers: { id: updatedEmployee._id } } }, { new: true });
+    const updatedPair = await Pair.findByIdAndUpdate(pairId, { $push: { passengers: { id: updatedEmployee._id } } }, { new: true });
 
-    console.log("pair : ", req.pair, "updatePair : ", updatedPair);
     // Optional: Check for existing trip, if not create a new one
     // const trip = await Trip.findOne({ pair: pairId, status: "upcoming" });
     // if (!trip) {
@@ -363,7 +362,7 @@ router.get("/getPairedEmployee", async (req, res) => {
     const pairs = await Pair.find()
       .populate('vehicle')        // Populate vehicle details
       .populate('driver')         // Populate driver details
-      .populate({ path: "passengers", model: "Employee" });  // Populate employee details
+      .populate({ path: "passengers.id", model: "Employee" });  // Populate employee details
 
     if (pairs.length === 0) {
       return res.status(404).json({
@@ -401,7 +400,7 @@ router.patch("/unpairEmployee/:id", async (req, res) => {
   try {
     // Update all pairs by removing the passenger with the given id
     const result = await Pair.updateMany(
-      { passengers: id }, // Find all pairs with this passenger
+      { passengers: id, status: "upcoming" }, // Find all pairs with this passenger
       { $pull: { passengers: id } } // Remove the passenger ID from the passengers array
     );
 
@@ -560,6 +559,35 @@ router.put("/trip/active", verifyToken, async (req, res) => {
 });
 
 
+router.get("/api/todaysTripsCount", async (req, res) => {
+  try {
+    // Get start and end of the current day
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // Query to count documents created today
+    const tripCount = await History.countDocuments({
+      createdAt: { $gte: startOfDay, $lte: endOfDay },
+    });
+
+    // Send the response
+    res.status(200).json({
+      success: true,
+      data: { totalTrips: tripCount },
+      message: "Successfully fetched today's trips count",
+    });
+  } catch (error) {
+    console.error("Error fetching today's trips count:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch today's trips count",
+      error: error.message,
+    });
+  }
+});
 
 
 router.put("/cancel/employee/:id", verifyToken, async (req, res) => {

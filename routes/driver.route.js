@@ -290,14 +290,14 @@ router.get("/getBlockDrivers", async (req, res) => {
     const list = await Driver.find({ black_list: true });
 
     // Check if no blocked drivers exist
-    if (list.length === 0) {
-      return res.status(404).json({
-        message: "No blocked drivers found",
-        status: "info",
-        success: true,
-        data: []
-      });
-    }
+    // if (list.length === 0) {
+    //   return res.status(404).json({
+    //     message: "No blocked drivers found",
+    //     status: "info",
+    //     success: true,
+    //     data: []
+    //   });
+    // }
 
     // Return the list of blocked drivers
     res.status(200).json({
@@ -358,22 +358,22 @@ router.patch("/unblockDriver/:id", async (req, res) => {
 
 
 
-router.put("/update/driver/:id", async (req, res) => {
+router.patch("/update/driver/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const data = req.body;
 
     // Check if any field in data is empty or undefined
-    for (let field in data) {
-      if (data[field] === "" || data[field] === undefined || data[field] === null) {
-        return res.status(400).json({
-          message: `Field ${field} cannot be empty`,
-          status: "error",
-          success: false,
-          data: null
-        });
-      }
-    }
+    // for (let field in data) {
+    //   if (data[field] === "" || data[field] === undefined || data[field] === null) {
+    //     return res.status(400).json({
+    //       message: `Field ${field} cannot be empty`,
+    //       status: "error",
+    //       success: false,
+    //       data: null
+    //     });
+    //   }
+    // }
 
     // Find the driver by ID and update the driver's details
     const updateDriver = await Driver.findByIdAndUpdate(id, { ...data }, { new: true });

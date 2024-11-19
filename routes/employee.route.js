@@ -88,7 +88,7 @@ router.get("/getEmployees", async (req, res) => {
 });
 
 
-router.get("/login/driver", verifyToken, async (req, res) => {
+router.get("/login/employee", verifyToken, async (req, res) => {
   try {
 
     res.json({
