@@ -225,7 +225,7 @@ router.post("/addPair/:vehicle/:driver", async (req, res) => {
       });
     }
 
-    if (existingVehicle.paired || existingDriver.paired) {
+    if (existingVehicle.paired && existingDriver.paired) {
       return res.status(400).json({
         message: "Vehicle or Driver already paired",
         status: "error",

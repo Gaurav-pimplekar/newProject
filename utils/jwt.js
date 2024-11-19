@@ -16,7 +16,7 @@ export const verifyToken = async (req, res, next) => {
             });
         }
 
-        const isCorrect = await jwt.verify(token, process.env.SECRET_KEY);
+        const isCorrect = await jwt.verify(token, "123");
 
         if (!isCorrect) {
             return res.status(401).json({
@@ -41,26 +41,38 @@ export const verifyToken = async (req, res, next) => {
             });
         }
 
+        let pair;
+
         if (!driver) {
             // If employee exists, attach the employee and pair information to the request
             req.employee = employee;
-            const pair = await Pair.findOne({ "passengers.id": employee._id })
+            pair = await Pair.findOne({ "passengers.id": employee._id })
                 .populate("vehicle")
                 .populate("driver")
-                .populate({ path: "passengers.id", model: "Employee" });
-            console.log(pair);
-            req.pair = pair;
+                .populate({ path: "passengers.id", model: "Employee" })
+                .populate({ path: "canceledBy.id", model: "Employee" });
+            console.log("Pair for employee: ", pair); // Log the populated pair for employee
         } else {
             // If driver exists, attach the driver and pair information to the request
             req.driver = driver;
-            
-            const pair = await Pair.findOne({ driver })
+            pair = await Pair.findOne({ driver: driver._id })
                 .populate("vehicle")
                 .populate("driver")
-            req.pair = pair;
-            req.employee = employee
+                .populate({ path: "passengers.id", model: "Employee" })
+                .populate({ path: "canceledBy.id", model: "Employee" });
+            console.log("Pair for driver: ", pair); // Log the populated pair for driver
         }
 
+        if (!pair) {
+            return res.status(404).json({
+                message: "Pair not found",
+                status: 404,
+                success: false,
+                data: null
+            });
+        }
+
+        req.pair = pair;
         next();
     } catch (error) {
         console.log(error);
