@@ -3,15 +3,16 @@ import { Employee } from "../module/employee.module.js";
 import Pair from "../module/pair.module.js";
 import jwt from "jsonwebtoken"
 import { verifyToken } from "../utils/jwt.js";
+import bcrypt from "bcrypt"
 
 const router = express.Router();
 
 router.post("/addEmployee", async (req, res) => {
   try {
-    const { name, phone_number, gender, email, shift_time, pickup_location, drop_location } = req.body;
+    const { name, phone_number, gender, employeeId, shift_time, pickup_location, drop_location } = req.body;
 
     // Validation: Check if any required field is missing
-    if (!name || !phone_number || !gender || !email || !shift_time || !pickup_location || !drop_location) {
+    if (!name || !phone_number || !gender || !employeeId || !shift_time || !pickup_location || !drop_location) {
       return res.status(400).json({
         message: "All fields are required",
         status: "error",
@@ -20,20 +21,22 @@ router.post("/addEmployee", async (req, res) => {
       });
     }
 
-    // Validation: Check if phone_number or email already exists (if unique constraints are required)
-    const existingEmployee = await Employee.findOne({ $or: [{ phone_number }, { email }] });
+    // Validation: Check if phone_number or employeeId already exists (if unique constraints are required)
+    const existingEmployee = await Employee.findOne({ $or: [{ phone_number }, { employeeId }] });
     if (existingEmployee) {
       return res.status(400).json({
-        message: "Phone number or email already exists",
+        message: "Phone number or employeeId already exists",
         status: "error",
         success: false,
         data: null
       });
     }
 
+    const newPassword = await bcrypt.hash(employeeId, 10);
+
     // Create new employee
     const newEmployee = await Employee.create({
-      name, phone_number, gender, email, shift_time, pickup_location, drop_location
+      name, phone_number, gender, employeeId, shift_time, pickup_location, drop_location, newPassword
     });
 
     res.status(201).json({

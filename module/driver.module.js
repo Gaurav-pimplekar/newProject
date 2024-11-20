@@ -64,6 +64,10 @@ const DriverSchema = new mongoose.Schema({
   role:{
     type:String,
     default:"driver"
+  },
+  password:{
+    type:String,
+    require: true
   }
 },{
   timestamps:true

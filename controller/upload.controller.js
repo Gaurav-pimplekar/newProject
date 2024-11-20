@@ -2,6 +2,7 @@ import express from "express";
 import multer from "multer";
 import xlsx from "xlsx";
 import { Employee } from "../module/employee.module.js"; // Ensure the model is correctly imported
+import bcrypt from "bcrypt"
 
 const router = express.Router();
 
@@ -36,8 +37,8 @@ router.post("/excel/employees", upload.single("file"), async (req, res) => {
                     case 'Employee Name':
                         rowObject.name = cell;
                         break;
-                    case 'Email':
-                        rowObject.email = cell;
+                    case "Davies Employee ID Number":
+                        rowObject.employeeId = cell;
                         break;
                     case 'Contact no.':
                         rowObject.phone_number = cell;
@@ -45,7 +46,7 @@ router.post("/excel/employees", upload.single("file"), async (req, res) => {
                     case 'Male /Female':
                         rowObject.gender = cell.toLowerCase(); // Ensure it matches "male" or "female"
                         break;
-                    case 'Shift':
+                    case 'Timing':
                         rowObject.shift_time = cell;
                         break;
                     case 'Pickup':
@@ -67,10 +68,36 @@ router.post("/excel/employees", upload.single("file"), async (req, res) => {
             return rowObject;
         });
 
-        // Insert data into MongoDB
-        await Employee.insertMany(employeesToInsert);
 
-        res.status(200).json({ message: "Data imported successfully!", data });
+        for(const i in employeesToInsert){
+            const emp = await Employee.findOne({phone_number: employeesToInsert[i].phone_number, email: employeesToInsert[i].email});
+
+            if (!emp) {
+                try {
+                    // If the employee does not exist, insert into the database
+                    console.log("employee is",employeesToInsert[i])
+                    const password =await bcrypt.hash(`${employeesToInsert[i].employeeId}`, 10);
+                    await Employee.create({...employeesToInsert[i], password});
+                } catch (err) {
+                    // Handle Mongoose duplicate key error or other errors
+                    if (err.code === 11000) { // Duplicate key error code
+                        console.log("Employee is already exist with phone", employeesToInsert[i].phone_number);
+                    } else {
+                        console.error("Error saving employee:", err);
+                    }
+                }
+            } else {
+                // If employee already exists, log and skip
+                console.log(`Employee with ${employeesToInsert[i].email || employeesToInsert[i].phone_number} already exists. Skipping.`);
+            }
+        }
+
+        // Response includes both inserted and skipped employees
+        res.status(200).json({
+            message: `employees imported successfully!`,
+            
+        });
+
     } catch (error) {
         console.error("Error uploading file:", error);
         res.status(500).json({ message: "Error uploading file", error });

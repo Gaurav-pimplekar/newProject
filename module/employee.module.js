@@ -7,8 +7,9 @@ const employeeSchema = new mongoose.Schema({
     type:String,
     required:true
   },
-  email:{
+  employeeId:{
     type:String,
+    required: true
   },
   phone_number:{
     type:String,
@@ -52,6 +53,10 @@ const employeeSchema = new mongoose.Schema({
   latitude:{
     type:Number,
     default: 73.9787
+  },
+  password:{
+    type:String,
+    require: true
   }
 },{
   timestamps:true

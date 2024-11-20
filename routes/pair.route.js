@@ -888,9 +888,10 @@ router.patch("/updatePassengerStatusOutCab/:passengerId",verifyToken, async (req
     // Find the pair and update the passenger's status to "outCab"
     const result = await Pair.updateOne(
       { _id: pairObjectId, "passengers.id": passengerObjectId }, // Match the specific pair and passenger
-      { $set: { "passengers.$.status": "outCab" }, driver: null } // Update the passenger's status to 'outCab'
+      { $set: { "passengers.$.status": "outCab" } } // Update the passenger's status to 'outCab'
     );
 
+    await Employee.findByIdAndUpdate(passengerId, {driver: null});
 
     const pair = await Pair.findById(req.pair._id).populate("vehicle")
     .populate("driver")

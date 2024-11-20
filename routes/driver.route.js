@@ -6,6 +6,7 @@ import Pair from "../module/pair.module.js";
 import Trip from "../module/trip.module.js";
 import jwt from "jsonwebtoken"
 import { verifyToken } from "../utils/jwt.js";
+import bcrypt from "bcrypt"
 
 const router = express.Router();
 
@@ -67,12 +68,14 @@ router.post(
       // Driver data from request body
       const driverData = req.body;
 
+      const password = await bcrypt.hash(driverData.license_id_number, 10);
+
       // Save driver data to the database
-      const driver = await Driver.create(driverData);
+      const driver = await Driver.create({...driverData, password});
 
       res.status(201).json({
         message: "Driver added successfully",
-        status: "success",
+        status: 200,
         success: true,
         data: driver,
       });
@@ -444,5 +447,8 @@ router.get("/get/driver/:id", async (req, res) => {
     });
   }
 });
+
+
+
 
 export default router;
