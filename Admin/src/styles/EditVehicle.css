@@ -1,0 +1,73 @@
+/* EditVehicle.css */
+
+/* Container for the EditVehicle page */
+.edit-vehicle {
+    width: 80%;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Title of the page */
+  .edit-vehicle h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  /* Form styles */
+  .edit-vehicle form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  /* Input field styles */
+  .edit-vehicle input[type="text"],
+  .edit-vehicle input[type="date"],
+  .edit-vehicle button {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .edit-vehicle input[type="text"],
+  .edit-vehicle input[type="date"] {
+    width: 100%;
+  }
+  
+  .edit-vehicle button {
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.3s ease;
+  }
+  
+  .edit-vehicle button:hover {
+    background-color: #45a049;
+  }
+  
+  /* Button and input focus */
+  .edit-vehicle input:focus,
+  .edit-vehicle button:focus {
+    outline: none;
+    border-color: #4CAF50;
+  }
+  
+  /* Form labels */
+  .edit-vehicle label {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  /* Loading message */
+  .edit-vehicle div {
+    text-align: center;
+    font-size: 18px;
+    color: #333;
+  }
+  

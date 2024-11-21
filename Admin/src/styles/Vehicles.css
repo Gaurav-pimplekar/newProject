@@ -1,0 +1,117 @@
+.content{
+  width: 1350px;
+}
+.cablist {
+  padding: 20px;
+  margin-left: 0;  
+  margin-right: 0; 
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: auto;
+}
+
+/* Title styles */
+.title {
+  text-align: left;  /* Align title to the left */
+  margin-bottom: 20px;
+}
+
+h2 {
+  color: #333;
+}
+
+/* Search bar styles */
+.search-bar {
+  display: flex;
+  justify-content: flex-start;  /* Align the search bar to the left */
+  margin-bottom: 20px;
+}
+
+.search-bar input {
+  width: 30%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  outline: none;
+}
+
+.search-bar input:focus {
+  border-color: #007bff;
+}
+
+/* Blacklisted Vehicles button aligned to the right */
+.blacklist {
+  display: block;
+  margin-left: auto;
+  margin-bottom: 20px;
+  padding: 10px 15px;
+  font-size: 16px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.blacklist:hover {
+  background-color: #e03b3b;
+}
+
+/* Table styles */
+.cablisttable {
+  width: 70%;  
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.cablisttable th,
+.cablisttable td {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.cablisttable th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.cablisttable tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.cablisttable tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Button styles inside table */
+.editbtn,
+.blacklistbtn {
+  padding: 6px 12px;
+  font-size: 14px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.editbtn {
+  background-color: #285e26;
+  margin-bottom: 5px;
+}
+
+.editbtn:hover {
+  background-color: #1e8d1a;
+}
+
+.blacklistbtn {
+  background-color: #ff4d4d;
+}
+
+.blacklistbtn:hover {
+  background-color: #e61313;
+}

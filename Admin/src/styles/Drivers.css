@@ -1,0 +1,110 @@
+/* Container for the driver list */
+.driver-list-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Search bar styles */
+.search-bar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.search-bar input {
+  width: 80%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  outline: none;
+}
+
+.search-bar input:focus {
+  border-color: #007bff;
+}
+
+/* Blacklist button aligned to the right */
+.blacklistDriver {
+  display: block;
+  margin-left: auto;
+  margin-bottom: 20px;
+  padding: 10px 15px;
+  font-size: 16px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.blacklistDriver:hover {
+  background-color: #ce1111;
+}
+
+/* Table styles */
+.driver-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.driver-table th,
+.driver-table td {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.driver-table th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.driver-table tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.driver-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Button styles inside table */
+.edit-btn,
+.blacklist-btn {
+  padding: 6px 12px;
+  font-size: 14px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.edit-btn {
+  background-color: #266623;
+  margin-bottom: 5px;
+}
+
+.edit-btn:hover {
+  background-color: #2da327;
+}
+
+.blacklist-btn {
+  background-color: #ff4d4d;
+}
+
+.blacklist-btn:hover {
+  background-color: #e61313;
+}
