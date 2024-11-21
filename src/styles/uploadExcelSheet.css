@@ -1,0 +1,47 @@
+.settings {
+    margin-top: 100px;
+    padding: 0px 30px;
+    padding-bottom: 50px;
+  }
+  
+  .settings__wrapper {
+    padding: 20px;
+    border-radius: 5px;
+    background-color: white;
+  }
+  
+  .settings__title {
+    color: blue;
+    font-size: 30px;
+    margin-bottom: 2rem;
+    font-weight: bolder;
+    text-shadow: 1px 2px 5px black;
+  }
+  
+  .settings__top {
+    display: flex;
+    align-items: center;
+    column-gap: 2.7rem;
+    margin-bottom: 1.5rem;
+    color: black;
+    font-weight: bold;
+  }
+  
+  .setting__btn {
+    padding: 7px;
+    background: transparent;
+    font-weight: bold;
+    border-radius: 5px;
+    color: black;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  
+  .file-input {
+    padding: 10px;
+    border-radius: 7px;
+    border: 1px solid rgb(156, 154, 154);
+    color: black;
+    width: 100%; /* Full width of the wrapper */
+  }
+  
