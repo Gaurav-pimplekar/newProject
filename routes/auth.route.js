@@ -6,6 +6,7 @@ import Pair from "../module/pair.module.js";
 import jwt from "jsonwebtoken"
 import { verifyToken } from "../utils/jwt.js";
 import bcrypt from "bcrypt"
+import { Admin } from "../module/admin.module.js";
 
 const router = express.Router();
 
@@ -160,6 +161,173 @@ router.post('/forgot-password', async (req, res) => {
         });
     }
 });
+
+
+
+
+// Create Account API
+router.post('/admin/create-account', async (req, res) => {
+    const { phone, password } = req.body;
+
+    // Validate input fields
+    if (!phone || !password) {
+        return res.status(400).json({
+            message: 'Phone, password, and email are required!',
+            status: 'error',
+            data: null,
+            success: false
+        });
+    }
+
+    if (!/^[0-9]{10}$/.test(phone)) {
+        return res.status(400).json({
+            message: 'Invalid phone number format. It should be 10 digits.',
+            status: 'error',
+            data: null,
+            success: false
+        });
+    }
+
+    // Check if the phone number already exists
+    const existingAdminByPhone = await Admin.findOne({ phone });
+    if (existingAdminByPhone) {
+        return res.status(400).json({
+            message: 'Phone number is already in use.',
+            status: 'error',
+            data: null,
+            success: false
+        });
+    }
+
+    try {
+        // Create new admin
+        const newpassword = await bcrypt.hash(password, 10);
+        const newAdmin = new Admin({
+            phone,
+            password: newpassword
+        });
+
+        // Save to the database
+        await newAdmin.save();
+
+        return res.status(201).json({
+            message: 'Admin account created successfully!',
+            status: 'success',
+            data: { phone },
+            success: true
+        });
+
+    } catch (error) {
+        console.error('Error creating admin account:', error);
+        return res.status(500).json({
+            message: 'Server error!',
+            status: 'error',
+            data: null,
+            success: false
+        });
+    }
+});
+
+// Admin Login API
+router.post('/admin/login', async (req, res) => {
+    const { phone, password } = req.body;
+
+    if (!phone || !password) {
+        return res.status(400).json({
+            message: 'Phone and password are required!',
+            status: 'error',
+            data: null,
+            success: false
+        });
+    }
+
+    try {
+        const admin = await Admin.findOne({ phone });
+        if (!admin) {
+            return res.status(404).json({
+                message: 'User not found!',
+                status: 'error',
+                data: null,
+                success: false
+            });
+        }
+
+        console.log(admin)
+        const isMatch = await bcrypt.compare(password, admin.password);
+        console.log(isMatch)
+        if (!isMatch) {
+            return res.status(401).json({
+                message: 'Invalid phone number or password!',
+                status: 'error',
+                data: null,
+                success: false
+            });
+        }
+
+        return res.status(200).json({
+            message: 'Login successful!',
+            status: 'success',
+            data: { phone },
+            success: true
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Server error!',
+            status: 'error',
+            data: null,
+            success: false
+        });
+    }
+});
+
+// Forgot Password API
+router.post('/admin/forgot-password', async (req, res) => {
+    const { phone, password } = req.body;
+
+    if (!phone || !password) {
+        return res.status(400).json({
+            message: 'Phone & Password number is required!',
+            status: 'error',
+            data: null,
+            success: false
+        });
+    }
+
+    try {
+        const admin = await Admin.findOne({ phone });
+        if (!admin) {
+            return res.status(404).json({
+                message: 'User not found!',
+                status: 'error',
+                data: null,
+                success: false
+            });
+        }
+
+        // For simplicity, we'll reset the password to 'admin@123'
+        console.log(password)
+        const hashedPassword = await bcrypt.hash(password, 10);
+        admin.password = hashedPassword;
+        await admin.save();
+
+        return res.status(200).json({
+            message: "Password reset successful",
+            status: 'success',
+            data: { phone },
+            success: true
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Server error!',
+            status: 'error',
+            data: null,
+            success: false
+        });
+    }
+});
+
 
 
 export default router;

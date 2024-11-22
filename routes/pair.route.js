@@ -119,6 +119,7 @@ router.get("/searchEmployee/:employeeName", async (req, res) => {
     });
 
     // If no employees are found, return a descriptive response
+    console.log("api call");
     if (employees.length === 0) {
       return res.status(404).json({
         message: "No employee found matching the criteria",
@@ -127,7 +128,7 @@ router.get("/searchEmployee/:employeeName", async (req, res) => {
         data: null
       });
     }
-
+    console.log("api call 2")
     // Return the found employees
     res.status(200).json({
       message: "Employees found successfully",
