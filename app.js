@@ -176,3 +176,16 @@ io.on('connection', (socket) => {
 server.listen(port, () => {
   console.log("app listening on port " + port);
 })
+
+
+
+
+
+// PORT=8080
+// MONGO_URL=mongodb+srv://gpimplekar:gaurav2001@cluster0.kxg9yaw.mongodb.net/test
+// MONGO=mongodb+srv://user:user@cluster0.2l8rd.mongodb.net/
+// SECRET_KEY=thisismysecretkey
+// API_SECRET=Ro53YARPufzK69nYPewW4vIzi1I
+// API_KEY=456748329592332
+// EMAIL_USER="leola.zulauf64@ethereal.email"
+// EMAIL_PASS="yVPhJWkKv73D8xMQ13"
