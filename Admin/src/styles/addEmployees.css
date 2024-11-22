@@ -1,0 +1,82 @@
+.add-employee-form {
+  width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+}
+
+.form-title {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Parent container for the two-column form */
+.allform {
+  display: flex;
+  /* align-items: center; */
+  /* justify-content: space-around; */
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Ensures each form-group takes up 50% of the form width */
+.form-group {
+  flex: 0 0 48%; /* Adjust the width to leave some space between columns */
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid black; /* 1px solid black border */
+  border-radius: 4px;
+  background-color: #fff;
+  color: #000;
+}
+
+input::placeholder {
+  color: #000;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.addbtn {
+  width: 100%; /* Full-width button at the bottom */
+}
+
+.submit-btn {
+  display: flex;
+  justify-content: center;
+  width: 100px;
+  padding: 10px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  background-color: #28a745;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.submit-btn:hover {
+  background-color: #218838;
+}
