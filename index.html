@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.IO Test for Trip System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        .status-box {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .button {
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .button.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .button.inactive {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h2>Socket.IO Trip System Test</h2>
+
+    <!-- Driver and User Registration -->
+    <div>
+        <button class="button" id="registerDriverBtn">Register as Driver</button>
+        <button class="button" id="registerUserBtn">Register as User</button>
+    </div>
+
+    <!-- Event Buttons -->
+    <div>
+        <button class="button" id="startTripBtn">Start Trip</button>
+        <button class="button" id="driverArrivedBtn">Driver Arrived</button>
+        <button class="button" id="sendOtpBtn">Send OTP</button>
+        <button class="button" id="verifyOtpBtn">Verify OTP</button>
+        <button class="button" id="driverDropBtn">Driver Drop Passenger</button>
+    </div>
+
+    <!-- Status Box -->
+    <div class="status-box" id="statusBox">
+        <p id="statusMessage">Waiting for actions...</p>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.1/socket.io.min.js"></script>
+    <script>
+        const socket = io("http://localhost:8080");
+
+        // Define user and driver IDs for testing
+        const userId = 'user123';
+        const driverId = 'driver123';
+        const pairId = 'pair456'; // Example Pair ID for testing (replace with actual pair ID)
+
+        // Register as driver or user
+        document.getElementById('registerDriverBtn').addEventListener('click', function() {
+            console.log("button clicked")
+            socket.emit('registerDriver', driverId);
+            updateStatus("Registered as driver.");
+        });
+
+        document.getElementById('registerUserBtn').addEventListener('click', function() {
+            socket.emit('registerUser', userId);
+            updateStatus("Registered as user.");
+        });
+
+        // Handle Trip Events
+        document.getElementById('startTripBtn').addEventListener('click', function() {
+            socket.emit('startTrip', `673c9802f4c78ed652ec67b3`);
+            updateStatus("Trip started.");
+        });
+
+        document.getElementById('driverArrivedBtn').addEventListener('click', function() {
+            socket.emit('driverArrived', pairId);
+            updateStatus("Driver has arrived at the location.");
+        });
+
+        document.getElementById('sendOtpBtn').addEventListener('click', function() {
+            const otp = '123456'; // Example OTP, can be dynamic
+            socket.emit('sendOtp', pairId, otp);
+            updateStatus(`OTP sent: ${otp}`);
+        });
+
+        document.getElementById('verifyOtpBtn').addEventListener('click', function() {
+            const otp = '123456'; // Example OTP, should be the same as the sent OTP
+            socket.emit('verifyOtp', pairId, otp);
+            updateStatus("OTP verified successfully.");
+        });
+
+        document.getElementById('driverDropBtn').addEventListener('click', function() {
+            socket.emit('driverDropPassenger', pairId, userId); // Drop the passenger (example)
+            updateStatus("Driver dropped the passenger.");
+        });
+
+        // Listen for events from server and display status messages
+        socket.on('tripStarted', function(data) {
+            updateStatus(data.message);
+        });
+
+        socket.on('driverArrived', function(data) {
+            updateStatus(data.message);
+        });
+
+        socket.on('otpSent', function(data) {
+            updateStatus(`OTP sent to passenger: ${data.otp}`);
+        });
+
+        socket.on('otpVerified', function(data) {
+            updateStatus(data.message);
+        });
+
+        socket.on('driverDropped', function(data) {
+            updateStatus(data.message);
+        });
+
+        // Helper function to update the status box
+        function updateStatus(message) {
+            const statusMessage = document.getElementById('statusMessage');
+            statusMessage.innerHTML = message;
+        }
+    </script>
+</body>
+</html>
