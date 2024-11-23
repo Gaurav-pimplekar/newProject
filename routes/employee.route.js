@@ -328,61 +328,61 @@ router.get('/employeesByNumber/:mobile', async (req, res) => {
 });
 
 
-router.post('/loginEmployee', async (req, res) => {
-  const { mobile, name } = req.body;  // Using name as password
+// router.post('/loginEmployee', async (req, res) => {
+//   const { mobile, name } = req.body;  // Using name as password
 
-  try {
-    // Find employee by mobile number
-    const employee = await Employee.findOne({ phone_number: mobile });
+//   try {
+//     // Find employee by mobile number
+//     const employee = await Employee.findOne({ phone_number: mobile });
 
-    // Check if employee exists
-    if (!employee) {
-      return res.status(404).json({
-        message: "Employee not found",
-        status: "error",
-        success: false,
-        data: null
-      });
-    }
+//     // Check if employee exists
+//     if (!employee) {
+//       return res.status(404).json({
+//         message: "Employee not found",
+//         status: "error",
+//         success: false,
+//         data: null
+//       });
+//     }
 
-    // Validate name as password (compare input name with employee name)
-    if (name !== employee.name) {
-      return res.status(401).json({
-        message: "Invalid credentials",
-        status: "error",
-        success: false,
-        data: null
-      });
-    }
+//     // Validate name as password (compare input name with employee name)
+//     if (name !== employee.name) {
+//       return res.status(401).json({
+//         message: "Invalid credentials",
+//         status: "error",
+//         success: false,
+//         data: null
+//       });
+//     }
 
-    // Generate JWT token
-    const token = jwt.sign({ mobile }, process.env.SECRET_KEY, { expiresIn: '1h' });
+//     // Generate JWT token
+//     const token = jwt.sign({ mobile }, process.env.SECRET_KEY, { expiresIn: '1h' });
 
-    // Find the pair if needed (Optional, depending on the use case)
-    const pair = await Pair.findOne({ passengers: employee._id }).populate("vehicle").populate("driver");
+//     // Find the pair if needed (Optional, depending on the use case)
+//     const pair = await Pair.findOne({ passengers: employee._id }).populate("vehicle").populate("driver");
 
-    // Respond with success and employee details
-    res.status(200).json({
-      message: "Login successful",
-      status: "success",
-      success: true,
-      data: {
-        employee,
-        pair,
-        token
-      }
-    });
+//     // Respond with success and employee details
+//     res.status(200).json({
+//       message: "Login successful",
+//       status: "success",
+//       success: true,
+//       data: {
+//         employee,
+//         pair,
+//         token
+//       }
+//     });
 
-  } catch (error) {
-    console.error("Error logging in:", error);
-    res.status(500).json({
-      message: "Server error",
-      status: "error",
-      success: false,
-      data: error.message
-    });
-  }
-});
+//   } catch (error) {
+//     console.error("Error logging in:", error);
+//     res.status(500).json({
+//       message: "Server error",
+//       status: "error",
+//       success: false,
+//       data: error.message
+//     });
+//   }
+// });
 
 
 
@@ -472,7 +472,6 @@ router.post("/employee/register", async (req, res) => {
   try {
     const {
       name,
-      email,
       phone_number,
       gender,
       shift_time,
@@ -480,10 +479,11 @@ router.post("/employee/register", async (req, res) => {
       drop_location,
       longitude,
       latitude,
+      password
     } = req.body;
 
     // Validate required fields
-    if (!name || !phone_number || !gender || !shift_time || !pickup_location || !drop_location) {
+    if (!name || !phone_number || !gender || !shift_time || !pickup_location || !drop_location || !longitude || !latitude || !password) {
       return res.status(400).json({
         message: "All required fields must be provided.",
         status: 400,
@@ -491,6 +491,10 @@ router.post("/employee/register", async (req, res) => {
         data: null,
       });
     }
+
+
+    //hash password
+    const newPassword = await bcrypt.hash(password, 10);
 
     // Create a new employee
     const newEmployee = new Employee({
@@ -503,6 +507,7 @@ router.post("/employee/register", async (req, res) => {
       drop_location,
       longitude,
       latitude,
+      password: newPassword
     });
 
     // Save employee to database
