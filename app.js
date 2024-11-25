@@ -76,6 +76,7 @@ io.on('connection', (socket) => {
                 pair.status = 'active'; // Set trip status to active
                 await pair.save();
 
+                io.emit("tripStarted", {message: "trip start"})
                 // Notify the driver and passengers
                 io.to(users[pair.driver.toString()]).emit('tripStarted', { message: 'Your trip has started.' });
                 pair.passengers.forEach((passenger) => {

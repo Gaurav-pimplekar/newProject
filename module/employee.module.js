@@ -47,12 +47,10 @@ const employeeSchema = new mongoose.Schema({
     default:"employee"
   },
   longitude:{
-    type:Number,
-    default:18.5808
+    type:Number
   },
   latitude:{
-    type:Number,
-    default: 73.9787
+    type:Number
   },
   password:{
     type:String,

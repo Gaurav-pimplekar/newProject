@@ -479,11 +479,12 @@ router.post("/employee/register", async (req, res) => {
       drop_location,
       longitude,
       latitude,
+      employeeId,
       password
     } = req.body;
 
     // Validate required fields
-    if (!name || !phone_number || !gender || !shift_time || !pickup_location || !drop_location || !longitude || !latitude || !password) {
+    if (!name || !phone_number || !gender || !shift_time || !pickup_location || !drop_location || !longitude || !latitude || !password || !employeeId) {
       return res.status(400).json({
         message: "All required fields must be provided.",
         status: 400,
@@ -493,16 +494,17 @@ router.post("/employee/register", async (req, res) => {
     }
 
 
+    console.log(password);
     //hash password
     const newPassword = await bcrypt.hash(password, 10);
 
     // Create a new employee
     const newEmployee = new Employee({
       name,
-      email,
       phone_number,
       gender,
       shift_time,
+      employeeId,
       pickup_location,
       drop_location,
       longitude,
