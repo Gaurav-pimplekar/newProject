@@ -56,16 +56,6 @@ let users = {};
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
 
-    // Registering users and drivers
-    socket.on('registerUser', (userId) => {
-        users[userId] = socket.id;
-        console.log(`User registered: ${userId}`);
-    });
-
-    socket.on('registerDriver', (driverId) => {
-        users[driverId] = socket.id;
-        console.log(`Driver registered: ${driverId}`);
-    });
 
     // Event: Trip starts
     socket.on('startTrip', async (pairId) => {
@@ -76,22 +66,21 @@ io.on('connection', (socket) => {
                 pair.status = 'active'; // Set trip status to active
                 await pair.save();
 
-
-                users[pair.driver._id.toString()] = socket.id;
-
-                pair.passengers.forEach((passenger)=>{
-                    users[passenger.id.toString()]= socket.id;
-                })
+                const pairId = pair._id;
+                users= {
+                    ...users,
+                    pairId: socket.id
+                }
 
 
                 console.log("user and driver attach successfully")
 
-                io.emit("tripStarted", { message: "trip start" })
+                io.to(users[pair._id]).emit("tripStarted", { message: "trip start" })
                 // Notify the driver and passengers
-                io.to(users[pair.driver.toString()]).emit('tripStarted', { message: 'Your trip has started.' });
-                pair.passengers.forEach((passenger) => {
-                    io.to(users[passenger.id.toString()]).emit('tripStarted', { message: 'Your trip has started.' });
-                });
+                // io.to(users[pair.driver.toString()]).emit('tripStarted', { message: 'Your trip has started.' });
+                // pair.passengers.forEach((passenger) => {
+                //     io.to(users[passenger.id.toString()]).emit('tripStarted', { message: 'Your trip has started.' });
+                // });
                 console.log(`Trip started for pairId: ${pairId}`);
             }
         } catch (err) {
