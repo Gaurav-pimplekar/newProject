@@ -21,6 +21,7 @@ import Otp from "./module/otp.module.js";
 import { Socket } from "dgram";
 import Pair from "./module/pair.module.js";
 import mongoose from "mongoose";
+import { Employee } from "./module/employee.module.js";
 
 const app = express();
 app.use(express.json());
@@ -115,14 +116,17 @@ io.on('connection', (socket) => {
     });
 
     // Event: Verify OTP
-    socket.on('verifyOtp', async ({ otp, employeeId, driverId }) => {
+    socket.on('verifyOtp', async ({ otp, employeeId, driverId, pairId }) => {
         try {
 
             const verify = await Otp.findOne({ employeeId, otp });
+            
 
             if (verify) {
+                const pair = await Pair.updateOne({"passengers.id": employeeId, "_id": pairId}, { $set: { "passengers.$.status": "inCab" } })
+
                 io.emit(`verifyOtp_${employeeId}`, { otp: true });
-                io.emit(`verifyOtp_${driverId}`, { otp: true });
+                io.emit(`verifyOtp_${driverId}`, { otp: true, pair });
             }
             else {
                 io.emit(`verifyOtp_${employeeId}`, { otp: false });
