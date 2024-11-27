@@ -69,18 +69,18 @@ io.on('connection', (socket) => {
                 const pairId = pair._id;
                 users= {
                     ...users,
-                    pairId: socket.id
+                    [pairId]: socket.id 
                 }
 
 
                 console.log("user and driver attach successfully")
 
-                io.to(users[pair._id]).emit("tripStarted", { message: "trip start" })
+                
                 // Notify the driver and passengers
-                // io.to(users[pair.driver.toString()]).emit('tripStarted', { message: 'Your trip has started.' });
-                // pair.passengers.forEach((passenger) => {
-                //     io.to(users[passenger.id.toString()]).emit('tripStarted', { message: 'Your trip has started.' });
-                // });
+                emit(`tripStarted_${driver._id}`, { message: 'Your trip has started.' });
+                pair.passengers.forEach((passenger) => {
+                    emit(`tripStarted_${passenger?._id}`, { message: 'Your trip has started.' });
+                });
                 console.log(`Trip started for pairId: ${pairId}`);
             }
         } catch (err) {
