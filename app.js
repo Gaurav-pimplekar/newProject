@@ -91,13 +91,11 @@ io.on('connection', (socket) => {
     // Event: Driver arrives at pickup location
     socket.on('driverArrived', async (employeeId) => {
         try {
-            io.emit(`Arrive_${employeeId}`, {
-                message: "driver arrive at your location
-                "})
+            io.emit(`Arrive_${employeeId}`, { message: "driver arrive at your location" })
         } catch (err) {
-                console.error('Error notifying driver arrival:', err);
-            }
-        });
+            console.error('Error notifying driver arrival:', err);
+        }
+    });
 
     // Event: Send OTP to passenger
     socket.on('sendOtp', async ({ employeeId }) => {
@@ -117,16 +115,18 @@ io.on('connection', (socket) => {
     });
 
     // Event: Verify OTP
-    socket.on('verifyOtp', async ({otp, employeeId}) => {
+    socket.on('verifyOtp', async ({ otp, employeeId, driverId }) => {
         try {
-            
-            const verify = await Otp.findOne({employeeId, otp});
 
-            if(verify){
-                io.emit(`verifyOtp_${employeeId}`, {otp: true});
+            const verify = await Otp.findOne({ employeeId, otp });
+
+            if (verify) {
+                io.emit(`verifyOtp_${employeeId}`, { otp: true });
+                io.emit(`verifyOtp_${driverId}`, { otp: true });
             }
-            else{
-                io.emit(`verifyOtp_${employeeId}`, {otp: false});
+            else {
+                io.emit(`verifyOtp_${employeeId}`, { otp: false });
+                io.emit(`verifyOtp_${driverId}`, { otp: true });
             }
 
         } catch (err) {
