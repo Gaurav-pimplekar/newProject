@@ -67,19 +67,19 @@ io.on('connection', (socket) => {
                 await pair.save();
 
                 const pairId = pair._id;
-                users= {
+                users = {
                     ...users,
-                    [pairId]: socket.id 
+                    [pairId]: socket.id
                 }
 
 
                 console.log("user and driver attach successfully")
 
-                
+
                 // Notify the driver and passengers
-                emit(`tripStarted_${driver._id}`, { message: 'Your trip has started.' });
+                io.emit(`tripStarted_${pair.driver._id}`, { message: 'Your trip has started.' });
                 pair.passengers.forEach((passenger) => {
-                    emit(`tripStarted_${passenger?._id}`, { message: 'Your trip has started.' });
+                    io.emit(`tripStarted_${passenger?.id}`, { message: 'Your trip has started.' });
                 });
                 console.log(`Trip started for pairId: ${pairId}`);
             }
@@ -89,74 +89,46 @@ io.on('connection', (socket) => {
     });
 
     // Event: Driver arrives at pickup location
-    socket.on('driverArrived', async (pairId) => {
+    socket.on('driverArrived', async (employeeId) => {
         try {
-            const pair = await Pair.findById(pairId);
-            if (pair && pair.status === 'active') {
-                // Notify the driver and passengers
-                io.to(users[pair.driver.toString()]).emit('driverArrived', { message: 'You have arrived at the pickup location.' });
-                pair.passengers.forEach((passenger) => {
-                    io.to(users[passenger.id.toString()]).emit('driverArrived', { message: 'Driver has arrived at your location.' });
-                });
-                console.log(`Driver arrived for pairId: ${pairId}`);
-            }
+            io.emit(`Arrive_${employeeId}`, {
+                message: "driver arrive at your location
+                "})
         } catch (err) {
-            console.error('Error notifying driver arrival:', err);
-        }
-    });
+                console.error('Error notifying driver arrival:', err);
+            }
+        });
 
     // Event: Send OTP to passenger
-    socket.on('sendOtp', async ({pairId, employeeId}) => {
+    socket.on('sendOtp', async ({ employeeId }) => {
         try {
-            const pair = await Pair.findById(pairId);
-            if (pair && pair.status === 'active') {
-                // Notify the passenger
-                // Generate a 6-digit OTP
-                const otp = crypto.randomInt(100000, 999999).toString();
 
-                // Save OTP to database
-                await Otp.create({ employeeId, otp });
+            // Generate a 6-digit OTP
+            const otp = crypto.randomInt(100000, 999999).toString();
 
+            // Save OTP to database
+            await Otp.create({ employeeId, otp });
 
-                pair.passengers.forEach((passenger) => {
-                    if(passenger.id == employeeId){
-                        io.to(users[passenger.id.toString()]).emit('otpSent', { otp });
-                    }
-                });
-                console.log(`OTP sent for pairId: ${pairId} - OTP: ${otp}`);
-            }
+            io.emit(`otpSent_${employeeId}`, { otp });
+
         } catch (err) {
             console.error('Error sending OTP:', err);
         }
     });
 
     // Event: Verify OTP
-    socket.on('verifyOtp', async ({pairId, otp, employeeId}) => {
+    socket.on('verifyOtp', async ({otp, employeeId}) => {
         try {
-            const pair = await Pair.findById(pairId);
             
-            if (pair && pair.status === 'active') {
-                // Notify the passenger that OTP is verified
-                const verify = await Otp.findOne({employeeId, otp});
+            const verify = await Otp.findOne({employeeId, otp});
 
-                if(verify){
-
-                    io.to(users[pair.driver._id.toString()].emit("otpVerified", { message: "OTP is currect"}))
-
-                    pair.passengers.forEach((passenger) => {
-                        if(passenger.id == employeeId){
-                            io.to(users[passenger.id.toString()]).emit('otpVerified', { message: 'OTP verified successfully!' });
-                        }
-                        
-                    });
-                    console.log(`OTP verified for pairId: ${pairId}`);
-
-                }
-                else{
-                    io.to(users[pair.driver._id.toString()].emit("otpVerified", { message: "OTP is wrong"}))
-                }
-                
+            if(verify){
+                io.emit(`verifyOtp_${employeeId}`, {otp: true});
             }
+            else{
+                io.emit(`verifyOtp_${employeeId}`, {otp: false});
+            }
+
         } catch (err) {
             console.error('Error verifying OTP:', err);
         }
