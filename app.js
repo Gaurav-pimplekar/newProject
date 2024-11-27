@@ -28,10 +28,10 @@ app.use(cors());
 
 const server = http.createServer(app); // Create HTTP server
 const io = new Server(server, {
-  cors: {
-    origin: "*", // Specify allowed origins
-    methods: ["GET", "POST"], // Specify allowed methods
-  },
+    cors: {
+        origin: "*", // Specify allowed origins
+        methods: ["GET", "POST"], // Specify allowed methods
+    },
 }); // Initialize Socket.io with the server
 
 
@@ -76,7 +76,17 @@ io.on('connection', (socket) => {
                 pair.status = 'active'; // Set trip status to active
                 await pair.save();
 
-                io.emit("tripStarted", {message: "trip start"})
+
+                users[pair.driver._id.toString()] = socket.id;
+
+                pair.passengers.forEach((passenger)=>{
+                    users[passenger.id.toString()]= socket.id;
+                })
+
+
+                console.log("user and driver attach successfully")
+
+                io.emit("tripStarted", { message: "trip start" })
                 // Notify the driver and passengers
                 io.to(users[pair.driver.toString()]).emit('tripStarted', { message: 'Your trip has started.' });
                 pair.passengers.forEach((passenger) => {
@@ -107,13 +117,22 @@ io.on('connection', (socket) => {
     });
 
     // Event: Send OTP to passenger
-    socket.on('sendOtp', async (pairId, otp) => {
+    socket.on('sendOtp', async ({pairId, employeeId}) => {
         try {
             const pair = await Pair.findById(pairId);
             if (pair && pair.status === 'active') {
                 // Notify the passenger
+                // Generate a 6-digit OTP
+                const otp = crypto.randomInt(100000, 999999).toString();
+
+                // Save OTP to database
+                await Otp.create({ employeeId, otp });
+
+
                 pair.passengers.forEach((passenger) => {
-                    io.to(users[passenger.id.toString()]).emit('otpSent', { otp });
+                    if(passenger.id == employeeId){
+                        io.to(users[passenger.id.toString()]).emit('otpSent', { otp });
+                    }
                 });
                 console.log(`OTP sent for pairId: ${pairId} - OTP: ${otp}`);
             }
@@ -123,15 +142,31 @@ io.on('connection', (socket) => {
     });
 
     // Event: Verify OTP
-    socket.on('verifyOtp', async (pairId, otp) => {
+    socket.on('verifyOtp', async ({pairId, otp, employeeId}) => {
         try {
             const pair = await Pair.findById(pairId);
+            
             if (pair && pair.status === 'active') {
                 // Notify the passenger that OTP is verified
-                pair.passengers.forEach((passenger) => {
-                    io.to(users[passenger.id.toString()]).emit('otpVerified', { message: 'OTP verified successfully!' });
-                });
-                console.log(`OTP verified for pairId: ${pairId}`);
+                const verify = await Otp.findOne({employeeId, otp});
+
+                if(verify){
+
+                    io.to(users[pair.driver._id.toString()].emit("otpVerified", { message: "OTP is currect"}))
+
+                    pair.passengers.forEach((passenger) => {
+                        if(passenger.id == employeeId){
+                            io.to(users[passenger.id.toString()]).emit('otpVerified', { message: 'OTP verified successfully!' });
+                        }
+                        
+                    });
+                    console.log(`OTP verified for pairId: ${pairId}`);
+
+                }
+                else{
+                    io.to(users[pair.driver._id.toString()].emit("otpVerified", { message: "OTP is wrong"}))
+                }
+                
             }
         } catch (err) {
             console.error('Error verifying OTP:', err);
@@ -174,8 +209,8 @@ io.on('connection', (socket) => {
 });
 
 
-server.listen(port, ()=>{
-  console.log("app listening on port "+port);
+server.listen(port, () => {
+    console.log("app listening on port " + port);
 })
 
 

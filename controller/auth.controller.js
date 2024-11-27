@@ -29,7 +29,7 @@ export const sendOtp = async (req, res) => {
     const otp = crypto.randomInt(100000, 999999).toString();
 
     // Save OTP to database
-    await Otp.create({ email, otp });
+    await Otp.create({ employeeId, otp });
 
     // Send OTP via email
     // const  info = await transporter.sendMail({
