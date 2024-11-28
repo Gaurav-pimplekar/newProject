@@ -125,7 +125,7 @@ io.on('connection', (socket) => {
             if (verify) {
                 const pair = await Pair.updateOne({ "passengers.id": employeeId, "_id": pairId }, { $set: { "passengers.$.status": "inCab" } })
 
-                io.emit(`verifyOtp_${employeeId}`, { otp: true, createdAt: verify.createdAt });
+                io.emit(`verifyOtp_${employeeId}`, { otp: true, pair, createdAt: verify.createdAt });
                 io.emit(`verifyOtp_${driverId}`, { otp: true, pair, createdAt: verify.createdAt });
             }
             else {
@@ -148,6 +148,8 @@ io.on('connection', (socket) => {
             console.error('Error no show passenger:', error);
         }
     })
+
+
 
 
 
