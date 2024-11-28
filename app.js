@@ -123,7 +123,7 @@ io.on('connection', (socket) => {
 
 
             if (verify) {
-                const pair = await Pair.updateOne({ "passengers.id": employeeId, "_id": pairId }, { $set: { "passengers.$.status": "inCab" } }, {new: true})
+                const pair = await Pair.updateOne({ "passengers.id": employeeId, "_id": pairId , "passengers.status": "waiting" }, { $set: { "passengers.$.status": "inCab" } }, {new: true})
 
                 io.emit(`verifyOtp_${employeeId}`, { otp: true, pair, createdAt: verify.createdAt });
                 io.emit(`verifyOtp_${driverId}`, { otp: true, pair, createdAt: verify.createdAt });
