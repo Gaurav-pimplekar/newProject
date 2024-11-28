@@ -150,6 +150,15 @@ io.on('connection', (socket) => {
     })
 
 
+    socket.on("sendLocation", async ({long, late, pairId})=>{
+        try {
+
+            io.emit(`getLocation_${pairId}`, {long, late});
+            
+        } catch (error) {
+            console.error("Error on send location", error);
+        }
+    })
 
 
 
