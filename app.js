@@ -106,9 +106,9 @@ io.on('connection', (socket) => {
             const otp = crypto.randomInt(100000, 999999).toString();
 
             // Save OTP to database
-            await Otp.create({ employeeId, otp });
+            const otp2 = await Otp.create({ employeeId, otp });
 
-            io.emit(`otpSent_${employeeId}`, { otp });
+            io.emit(`otpSent_${employeeId}`, { otp, createdAt: otp2.createdAt });
 
         } catch (err) {
             console.error('Error sending OTP:', err);
