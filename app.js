@@ -138,6 +138,19 @@ io.on('connection', (socket) => {
         }
     });
 
+
+    socket.on(`noShowMore`,async (employeeId)=>{
+        try {
+
+            io.emit(`noShowMore_${employeeId}`, {noShow : true});
+            
+        } catch (error) {
+            console.error('Error no show passenger:', error);
+        }
+    })
+
+
+
     // Event: Driver drops off passenger
     socket.on('driverDropPassenger', async (pairId, passengerId) => {
         try {
@@ -147,11 +160,12 @@ io.on('connection', (socket) => {
                 const passenger = pair.passengers.find((p) => p.id.toString() === passengerId.toString());
                 if (passenger) {
                     passenger.status = 'outCab'; // Set the status to 'outCab'
+                    
                     await pair.save();
 
-                    // Notify the passenger and driver
-                    io.to(users[pair.driver.toString()]).emit('driverDropped', { message: `Driver dropped passenger ${passengerId}.` });
-                    io.to(users[passengerId]).emit('driverDropped', { message: 'You have been dropped off.' });
+                    Employee.findByIdAndUpdate(passengerId, {driver: null});
+
+                    io.emit(`driverDropped_${passengerId}`, { message: 'You have been dropped off.' });
                 }
                 console.log(`Driver dropped passenger ${passengerId} for pairId: ${pairId}`);
             }
