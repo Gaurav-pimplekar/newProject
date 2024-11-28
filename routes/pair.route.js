@@ -883,8 +883,8 @@ router.patch("/updatePassengerStatusOutCab/:passengerId",verifyToken, async (req
 
   try {
     // Convert passengerId and pairId to ObjectIds (in case they are not in ObjectId format)
-    const passengerObjectId = mongoose.Types.ObjectId(passengerId);
-    const pairObjectId = mongoose.Types.ObjectId(pairId);
+    const passengerObjectId =new mongoose.Types.ObjectId(passengerId);
+    const pairObjectId =new mongoose.Types.ObjectId(pairId);
 
     // Find the pair and update the passenger's status to "outCab"
     const result = await Pair.updateOne(
