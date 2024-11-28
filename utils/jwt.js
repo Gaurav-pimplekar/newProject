@@ -58,7 +58,8 @@ export const verifyToken = async (req, res, next) => {
             const pair = await Pair.findOne({ driver })
                 .populate("vehicle")
                 .populate("driver")
-                .populate({ path: "passengers.id", model: "Employee" });
+                .populate({ path: "passengers.id", model: "Employee" })
+                .populate({ path: "canceledBy.id", model: "Employee" });
             req.pair = pair;
             
         }
