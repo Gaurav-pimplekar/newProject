@@ -120,17 +120,17 @@ io.on('connection', (socket) => {
         try {
 
             const verify = await Otp.findOne({ employeeId, otp });
-            
+
 
             if (verify) {
-                const pair = await Pair.updateOne({"passengers.id": employeeId, "_id": pairId}, { $set: { "passengers.$.status": "inCab" } })
+                const pair = await Pair.updateOne({ "passengers.id": employeeId, "_id": pairId }, { $set: { "passengers.$.status": "inCab" } })
 
-                io.emit(`verifyOtp_${employeeId}`, { otp: true });
-                io.emit(`verifyOtp_${driverId}`, { otp: true, pair });
+                io.emit(`verifyOtp_${employeeId}`, { otp: true, createdAt: verify.createdAt });
+                io.emit(`verifyOtp_${driverId}`, { otp: true, pair, createdAt: verify.createdAt });
             }
             else {
-                io.emit(`verifyOtp_${employeeId}`, { otp: false });
-                io.emit(`verifyOtp_${driverId}`, { otp: true });
+                io.emit(`verifyOtp_${employeeId}`, { otp: false, createdAt: verify.createdAt });
+                io.emit(`verifyOtp_${driverId}`, { otp: true, createdAt: verify.createdAt });
             }
 
         } catch (err) {
