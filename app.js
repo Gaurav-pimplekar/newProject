@@ -186,7 +186,7 @@ io.on('connection', (socket) => {
     socket.on("updateDriver", async ({ driverId }) => {
         try {
 
-            const pair = await Pair.findById(driverId).populate("vehicle")
+            const pair = await Pair.findOne({driver: driverId}).populate("vehicle")
                 .populate("driver")
                 .populate({ path: "passengers.id", model: "Employee" })
                 .populate({ path: "canceledBy.id", model: "Employee" });
@@ -203,7 +203,7 @@ io.on('connection', (socket) => {
     socket.on("updateEmployee", async ({ employeeId }) => {
         try {
 
-            const pair = await Pair.findById(employeeId).populate("vehicle")
+            const pair = await Pair.findOne({"passengers.id": employeeId}).populate("vehicle")
                 .populate("driver")
                 .populate({ path: "passengers.id", model: "Employee" })
                 .populate({ path: "canceledBy.id", model: "Employee" });
