@@ -38,14 +38,16 @@ const pairSchema = new mongoose.Schema({
             enum: ["cancelByEmployee", "Employee Not Reach"]
         }
     }],
+    isDropTrip:{
+        type: Boolean,
+        default: false
+    },
     dropLocation: {
         latitude: {
-            type: Number,
-            required: true,
+            type: Number
         },
         longitude: {
-            type: Number,
-            required: true,
+            type: Number
         },
     }
 }, {

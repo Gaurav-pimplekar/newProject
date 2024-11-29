@@ -300,6 +300,8 @@ router.patch("/pairEmployee/:user/:pairId", async (req, res) => {
   try {
     const { user, pairId } = req.params;
     //const pairId = req.pair._id;
+    const { isDropTrip, latitude, longitude}= req.body;
+
 
     // Find the employee by user ID
     const employee = await Employee.findById(user);
@@ -327,7 +329,10 @@ router.patch("/pairEmployee/:user/:pairId", async (req, res) => {
     const updatedEmployee = await Employee.findByIdAndUpdate(user, { driver: pairId }, { new: true });
 
     // Add the employee to the passengers array in the pair
-    const updatedPair = await Pair.findByIdAndUpdate(pairId, { $push: { passengers: { id: updatedEmployee._id } } }, { new: true });
+//    const updatedPair = await Pair.findByIdAndUpdate(pairId, { $push: { passengers: { id: updatedEmployee._id } } }, { new: true });
+
+const updatedPair = await Pair.findByIdAndUpdate(pairId, { $push: { passengers: { id: updatedEmployee._id } }, isDropTrip, dropLocation : { latitude, longitude} }, { new: true });
+
 
     // Optional: Check for existing trip, if not create a new one
     // const trip = await Trip.findOne({ pair: pairId, status: "upcoming" });

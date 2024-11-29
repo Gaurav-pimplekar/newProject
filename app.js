@@ -162,6 +162,20 @@ io.on('connection', (socket) => {
     })
 
 
+    socket.on("pairEmployee", async ({pairId})=>{
+        try {
+
+            const pair = await Pair.findById(pairId).populate("vehicle")
+            .populate("driver")
+            .populate({ path: "passengers.id", model: "Employee" })
+            .populate({ path: "canceledBy.id", model: "Employee" });
+
+            io.emit(`updatePair_${pairId}`, {pair});
+            
+        } catch (error) {
+            console.log(error);
+        }
+    });
 
     // Event: Driver drops off passenger
     socket.on('driverDropPassenger', async (pairId, passengerId) => {
