@@ -134,8 +134,8 @@ io.on('connection', (socket) => {
                 io.emit(`verifyOtp_${driverId}`, { otp: true, pair, createdAt: verify.createdAt });
             }
             else {
-                io.emit(`verifyOtp_${employeeId}`, { otp: false, createdAt: verify.createdAt });
-                io.emit(`verifyOtp_${driverId}`, { otp: false, createdAt: verify.createdAt });
+                io.emit(`verifyOtp_${employeeId}`, { otp: false });
+                io.emit(`verifyOtp_${driverId}`, { otp: false });
             }
 
         } catch (err) {
