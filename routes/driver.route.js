@@ -224,7 +224,8 @@ router.get("/login/driver", verifyToken, async (req, res) => {
   try {
 
     res.json({
-      pair: req.pair
+      pair: req.pair,
+      driver: req.driver
     })
 
   } catch (error) {

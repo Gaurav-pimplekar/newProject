@@ -34,7 +34,7 @@ export const verifyToken = async (req, res, next) => {
 
         if (!driver && !employee) {
             return res.status(404).json({
-                message: "Invalid email or mobile number",
+                message: "Invalid password or mobile number",
                 status: 404,
                 success: false,
                 data: null
@@ -53,15 +53,14 @@ export const verifyToken = async (req, res, next) => {
             
         } else {
             // If driver exists, attach the driver and pair information to the request
-            req.driver = driver;
             
-            const pair = await Pair.findOne({ driver })
+            const pair = await Pair.findOne({ driver : driver._id })
                 .populate("vehicle")
                 .populate("driver")
                 .populate({ path: "passengers.id", model: "Employee" })
                 .populate({ path: "canceledBy.id", model: "Employee" });
             req.pair = pair;
-            
+            req.driver = driver;
         }
 
         next();
