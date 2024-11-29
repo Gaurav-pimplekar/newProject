@@ -17,10 +17,10 @@ const pairSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee"
         },
-        status:{
-            type:String,
+        status: {
+            type: String,
             enum: ["inCab", "outCab", "waiting"],
-            default:"waiting"
+            default: "waiting"
         }
     }],
     status: {
@@ -33,11 +33,21 @@ const pairSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee"
         },
-        status:{
-            type:String,
+        status: {
+            type: String,
             enum: ["cancelByEmployee", "Employee Not Reach"]
         }
     }],
+    dropLocation: {
+        latitude: {
+            type: Number,
+            required: true,
+        },
+        longitude: {
+            type: Number,
+            required: true,
+        },
+    }
 }, {
     timestamps: true
 })
