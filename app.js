@@ -73,6 +73,7 @@ io.on('connection', (socket) => {
                     [pairId]: socket.id
                 }
 
+                // await Location.create({driverId, latitude, longitude})
 
                 console.log("user and driver attach successfully")
 
