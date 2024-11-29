@@ -3,6 +3,7 @@ import axios from "axios";
 import "../styles/pairingEmployee.css"; // Ensure this CSS file exists for styling
 import { useDispatch, useSelector } from "react-redux";
 import { get_pair_employee_and_driver, get_pair_vehicle_and_driver, pair_employee_and_driver, search_employee, unpairEmployee } from "../storage/adminStorage";
+import io from "socket.io-client"
 
 const AddEmployee = () => {
   const [drivers, setDrivers] = useState([]);
@@ -14,6 +15,7 @@ const AddEmployee = () => {
   const dispatch = useDispatch();
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const state = useSelector(state => state.admin);
+  const socket = io("http://localhost:8080");
 
   const handlePairEmployee = (employee) => {
     setSelectedEmployee(employee);
@@ -23,20 +25,25 @@ const AddEmployee = () => {
   console.log(state);
   const handleAddPairing = async (driver) => {
     await dispatch(pair_employee_and_driver({employee: selectedEmployee._id, driver: driver._id}))
+
+    socket.emit("pairEmployee", {pairId: driver._id});
+
     dispatch(get_pair_employee_and_driver());
     dispatch(get_pair_vehicle_and_driver());
     setIsModalOpen(false);
   };
 
   const handleUnpair = async (id) => {
-    console.log(id)
+    
     await dispatch(unpairEmployee(id)).unwrap();
+
+    socket.emit("pairEmployee", {pairId: id});
 
     dispatch(get_pair_employee_and_driver());
     dispatch(get_pair_vehicle_and_driver());
   };
 
-  console.log();
+  
 
   useEffect(()=>{
     dispatch(get_pair_employee_and_driver());
