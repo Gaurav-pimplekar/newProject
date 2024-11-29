@@ -124,14 +124,18 @@ io.on('connection', (socket) => {
 
 
             if (verify) {
-                const pair = await Pair.updateOne({ "passengers.id": employeeId, "_id": pairId , "passengers.status": "waiting" }, { $set: { "passengers.$.status": "inCab" } }, {new: true})
+                const pair = await Pair.updateOne({ "passengers.id": employeeId, "_id": pairId, "passengers.status": "waiting" }, { $set: { "passengers.$.status": "inCab" } }, { new: true })
+                    .populate("vehicle")
+                    .populate("driver")
+                    .populate({ path: "passengers.id", model: "Employee" })
+                    .populate({ path: "canceledBy.id", model: "Employee" });
 
                 io.emit(`verifyOtp_${employeeId}`, { otp: true, pair, createdAt: verify.createdAt });
                 io.emit(`verifyOtp_${driverId}`, { otp: true, pair, createdAt: verify.createdAt });
             }
             else {
                 io.emit(`verifyOtp_${employeeId}`, { otp: false, createdAt: verify.createdAt });
-                io.emit(`verifyOtp_${driverId}`, { otp: true, createdAt: verify.createdAt });
+                io.emit(`verifyOtp_${driverId}`, { otp: false, createdAt: verify.createdAt });
             }
 
         } catch (err) {
@@ -140,74 +144,74 @@ io.on('connection', (socket) => {
     });
 
 
-    socket.on(`noShowMore`,async (employeeId)=>{
+    socket.on(`noShowMore`, async (employeeId) => {
         try {
 
-            io.emit(`noShowMore_${employeeId}`, {noShow : true});
-            
+            io.emit(`noShowMore_${employeeId}`, { noShow: true });
+
         } catch (error) {
             console.error('Error no show passenger:', error);
         }
     })
 
 
-    socket.on("sendLocation", async ({long, late, pairId})=>{
+    socket.on("sendLocation", async ({ long, late, pairId }) => {
         try {
 
-            io.emit(`getLocation_${pairId}`, {long, late});
-            
+            io.emit(`getLocation_${pairId}`, { long, late });
+
         } catch (error) {
             console.error("Error on send location", error);
         }
     })
 
 
-    socket.on("pairEmployee", async ({pairId})=>{
+    socket.on("pairEmployee", async ({ pairId }) => {
         try {
 
             const pair = await Pair.findById(pairId).populate("vehicle")
-            .populate("driver")
-            .populate({ path: "passengers.id", model: "Employee" })
-            .populate({ path: "canceledBy.id", model: "Employee" });
+                .populate("driver")
+                .populate({ path: "passengers.id", model: "Employee" })
+                .populate({ path: "canceledBy.id", model: "Employee" });
 
-            if(pair){
-                io.emit(`updatePair_${pairId}`, {pair});
+            if (pair) {
+                io.emit(`updatePair_${pairId}`, { pair });
             }
-            
+
         } catch (error) {
             console.log(error);
         }
     });
 
-    socket.on("updateDriver", async ({driverId})=>{
+    socket.on("updateDriver", async ({ driverId }) => {
         try {
 
             const pair = await Pair.findById(driverId).populate("vehicle")
-            .populate("driver")
-            .populate({ path: "passengers.id", model: "Employee" })
-            .populate({ path: "canceledBy.id", model: "Employee" });
+                .populate("driver")
+                .populate({ path: "passengers.id", model: "Employee" })
+                .populate({ path: "canceledBy.id", model: "Employee" });
 
-            if(pair){
-                io.emit(`updateDriver_${driverId}`, {pair});
+            if (pair) {
+                io.emit(`updateDriver_${driverId}`, { pair });
             }
-            
+
         } catch (error) {
             console.log(error);
         }
     })
 
-    socket.on("updateEmployee", async ({employeeId})=>{
+    socket.on("updateEmployee", async ({ employeeId }) => {
         try {
 
             const pair = await Pair.findById(employeeId).populate("vehicle")
-            .populate("driver")
-            .populate({ path: "passengers.id", model: "Employee" })
-            .populate({ path: "canceledBy.id", model: "Employee" });
+                .populate("driver")
+                .populate({ path: "passengers.id", model: "Employee" })
+                .populate({ path: "canceledBy.id", model: "Employee" });
 
-            if(pair){
-                io.emit(`updateEmployee_${employeeId}`, {pair});
+            if (pair) {
+                io.emit(`updateEmployee_${employeeId}`, { pair });
             }
-            
+
         } catch (error) {
             console.log(error);
         }
@@ -222,10 +226,10 @@ io.on('connection', (socket) => {
                 const passenger = pair.passengers.find((p) => p.id.toString() === passengerId.toString());
                 if (passenger) {
                     passenger.status = 'outCab'; // Set the status to 'outCab'
-                    
+
                     await pair.save();
 
-                    Employee.findByIdAndUpdate(passengerId, {driver: null});
+                    Employee.findByIdAndUpdate(passengerId, { driver: null });
 
                     io.emit(`driverDropped_${passengerId}`, { message: 'You have been dropped off.' });
                 }

@@ -657,7 +657,10 @@ router.put("/cancel/employee/:id", verifyToken, async (req, res) => {
       message: "Trip canceled successfully for employee",
       status: 200,
       success: true,
-      data: updatedPair
+      data: {
+        pair: updatedPair,
+        driver: req.driver
+      }
     });
   } catch (error) {
     console.error('Error canceling trip for employee:', error);
