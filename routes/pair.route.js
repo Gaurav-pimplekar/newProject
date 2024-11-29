@@ -300,7 +300,7 @@ router.patch("/pairEmployee/:user/:pairId", async (req, res) => {
   try {
     const { user, pairId } = req.params;
     //const pairId = req.pair._id;
-    const { isDropTrip, latitude, longitude}= req.body;
+    // const { isDropTrip, latitude, longitude}= req.body;
 
 
     // Find the employee by user ID
