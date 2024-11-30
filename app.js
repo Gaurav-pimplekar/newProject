@@ -130,12 +130,19 @@ io.on('connection', (socket) => {
                     .populate({ path: "passengers.id", model: "Employee" })
                     .populate({ path: "canceledBy.id", model: "Employee" });
 
+                const p = await Pair.findById(pairId)
+                    .populate("vehicle")
+                    .populate("driver")
+                    .populate({ path: "passengers.id", model: "Employee" })
+                    .populate({ path: "canceledBy.id", model: "Employee" });
+
                 io.emit(`verifyOtp_${employeeId}`, { otp: true, pair, createdAt: verify.createdAt });
-                io.emit(`verifyOtp_${driverId}`, { otp: true, pair, createdAt: verify.createdAt });
+                io.emit(`verifyOtp_${driverId._id}`, { otp: true, pair, createdAt: verify.createdAt });
             }
             else {
+                console.log("verifyOtp_", employeeId, driverId)
                 io.emit(`verifyOtp_${employeeId}`, { otp: false });
-                io.emit(`verifyOtp_${driverId}`, { otp: false });
+                io.emit(`verifyOtp_${driverId._id}`, { otp: false });
             }
 
         } catch (err) {
@@ -186,7 +193,7 @@ io.on('connection', (socket) => {
     socket.on("updateDriver", async ({ driverId }) => {
         try {
 
-            const pair = await Pair.findOne({driver: driverId}).populate("vehicle")
+            const pair = await Pair.findOne({ driver: driverId }).populate("vehicle")
                 .populate("driver")
                 .populate({ path: "passengers.id", model: "Employee" })
                 .populate({ path: "canceledBy.id", model: "Employee" });
@@ -203,7 +210,7 @@ io.on('connection', (socket) => {
     socket.on("updateEmployee", async ({ employeeId }) => {
         try {
 
-            const pair = await Pair.findOne({"passengers.id": employeeId}).populate("vehicle")
+            const pair = await Pair.findOne({ "passengers.id": employeeId }).populate("vehicle")
                 .populate("driver")
                 .populate({ path: "passengers.id", model: "Employee" })
                 .populate({ path: "canceledBy.id", model: "Employee" });
@@ -230,7 +237,7 @@ io.on('connection', (socket) => {
                     await pair.save();
 
                     Employee.findByIdAndUpdate(passengerId, { driver: null });
-
+                    console.log("passeneesId: ", passengerId)
                     io.emit(`driverDropped_${passengerId}`, { message: 'You have been dropped off.' });
                 }
                 console.log(`Driver dropped passenger ${passengerId} for pairId: ${pairId}`);

@@ -27,6 +27,8 @@ const AddEmployee = () => {
     await dispatch(pair_employee_and_driver({employee: selectedEmployee._id, driver: driver._id}))
 
     socket.emit("pairEmployee", {pairId: driver._id});
+    socket.emit("updateDriver", { driverId: driver.driver._id });
+    socket.emit("updateEmployee", { employeeId: selectedEmployee._id })
 
     dispatch(get_pair_employee_and_driver());
     dispatch(get_pair_vehicle_and_driver());
