@@ -325,6 +325,16 @@ router.patch("/pairEmployee/:user/:pairId", async (req, res) => {
       });
     }
 
+
+    if(employee.driver !== null){
+      return res.status(404).json({
+        message: "Trip is available for this employee",
+        status: "error",
+        success: false,
+        data: null
+      });
+    }
+
     // Update the employee with the driver's pairId
     const updatedEmployee = await Employee.findByIdAndUpdate(user, { driver: pairId }, { new: true });
 

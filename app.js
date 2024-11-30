@@ -20,7 +20,7 @@ import { Server } from "socket.io"; // Import Socket.io
 import Otp from "./module/otp.module.js";
 import { Socket } from "dgram";
 import Pair from "./module/pair.module.js";
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import { Employee } from "./module/employee.module.js";
 
 const app = express();
@@ -136,8 +136,8 @@ io.on('connection', (socket) => {
                     .populate({ path: "passengers.id", model: "Employee" })
                     .populate({ path: "canceledBy.id", model: "Employee" });
 
-                io.emit(`verifyOtp_${employeeId}`, { otp: true, pair, createdAt: verify.createdAt });
-                io.emit(`verifyOtp_${driverId._id}`, { otp: true, pair, createdAt: verify.createdAt });
+                io.emit(`verifyOtp_${employeeId}`, { otp: true, pair: p, createdAt: verify.createdAt });
+                io.emit(`verifyOtp_${driverId._id}`, { otp: true, pair: p, createdAt: verify.createdAt });
             }
             else {
                 console.log("verifyOtp_", employeeId, driverId)
@@ -225,22 +225,47 @@ io.on('connection', (socket) => {
     })
 
     // Event: Driver drops off passenger
-    socket.on('driverDropPassenger', async (pairId, passengerId) => {
+    socket.on('driverDropPassenger', async ({pairId, passengerId}) => {
         try {
+            console.log("id",pairId, "+++++++", passengerId);
+            // Validate pairId and passengerId
+            // if (!isValidObjectId(pairId) || !isValidObjectId(passengerId)) {
+            //     console.error('Invalid pairId or passengerId');
+            //     return; // Return early if either ID is invalid
+            // }
+    
+            // Fetch the pair with the given pairId
             const pair = await Pair.findById(pairId);
-            if (pair && pair.status === 'active') {
-                // Update passenger status
+            if (!pair) {
+                console.error('Pair not found');
+                return;
+            }
+    
+            // Check if the pair status is 'active'
+            if (pair.status === 'active') {
+                // Find the passenger within the pair
                 const passenger = pair.passengers.find((p) => p.id.toString() === passengerId.toString());
+    
                 if (passenger) {
-                    passenger.status = 'outCab'; // Set the status to 'outCab'
-
+                    // Update passenger status to 'outCab'
+                    passenger.status = 'outCab';
+    
+                    // Save the updated pair
                     await pair.save();
-
-                    Employee.findByIdAndUpdate(passengerId, { driver: null });
-                    console.log("passeneesId: ", passengerId)
+    
+                    // Update the employee record to remove the driver reference
+                    await Employee.findByIdAndUpdate(passengerId, { driver: null });
+    
+                    console.log(`Passenger ${passengerId} has been dropped for pairId: ${pairId}`);
+    
+                    // Emit the events to notify the passenger and driver
                     io.emit(`driverDropped_${passengerId}`, { message: 'You have been dropped off.' });
+                    io.emit('updateDriver', { driverId: pair.driver?._id });
+                } else {
+                    console.error('Passenger not found in pair');
                 }
-                console.log(`Driver dropped passenger ${passengerId} for pairId: ${pairId}`);
+            } else {
+                console.error('Pair is not active');
             }
         } catch (err) {
             console.error('Error dropping passenger:', err);

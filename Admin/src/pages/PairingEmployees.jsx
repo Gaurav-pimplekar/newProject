@@ -24,11 +24,15 @@ const AddEmployee = () => {
 
   console.log(state);
   const handleAddPairing = async (driver) => {
-    await dispatch(pair_employee_and_driver({employee: selectedEmployee._id, driver: driver._id}))
+    await dispatch(pair_employee_and_driver({ employee: selectedEmployee._id, driver: driver._id }))
 
-    socket.emit("pairEmployee", {pairId: driver._id});
+    socket.emit("pairEmployee", { pairId: driver._id });
     socket.emit("updateDriver", { driverId: driver.driver._id });
     socket.emit("updateEmployee", { employeeId: selectedEmployee._id })
+
+    socket.on(`updatePair_${driver._id}`, (data) => {
+      dispatch(get_pair_employee_and_driver());
+    })
 
     dispatch(get_pair_employee_and_driver());
     dispatch(get_pair_vehicle_and_driver());
@@ -36,21 +40,23 @@ const AddEmployee = () => {
   };
 
   const handleUnpair = async (id) => {
-    
+
     await dispatch(unpairEmployee(id)).unwrap();
 
-    socket.emit("pairEmployee", {pairId: id});
+    socket.emit("pairEmployee", { pairId: id });
 
     dispatch(get_pair_employee_and_driver());
     dispatch(get_pair_vehicle_and_driver());
   };
 
-  
 
-  useEffect(()=>{
+
+
+
+  useEffect(() => {
     dispatch(get_pair_employee_and_driver());
     dispatch(get_pair_vehicle_and_driver())
-  },[])
+  }, [])
 
   return (
     <div className="add-employee-container">
@@ -62,15 +68,17 @@ const AddEmployee = () => {
           type="text"
           placeholder="Search by Employee Name"
           value={searchTerm}
-          onChange={(e) => {const searchValue = e.target.value;
+          onChange={(e) => {
+            const searchValue = e.target.value;
             setSearchTerm(searchValue); // Update the searchTerm state
             if (searchValue.trim()) { // Only dispatch if the search term is not empty
               dispatch(search_employee(searchValue)); // Dispatch search action
-            }; setSearchTerm(e.target.value)}}
+            }; setSearchTerm(e.target.value)
+          }}
         />
       </div>
 
-      {state.search_employee.length !=0 ? (
+      {state.search_employee.length != 0 ? (
         <div className="table">
           <div className="table_head">
             <table className="cab-list-table">
@@ -97,7 +105,7 @@ const AddEmployee = () => {
             </table>
           </div>
         </div>
-      ): <div> {state.message} </div>}
+      ) : <div> {state.message} </div>}
 
       {isModalOpen && selectedEmployee && (
         <div className="modal">
@@ -135,17 +143,17 @@ const AddEmployee = () => {
           <h2>Employee-Driver Pairings</h2>
           {state?.paired_employees?.map((pairingParent, index) => (
             <>
-            {pairingParent?.passengers?.map((pairing) =>{
-              return <>
-              <div key={index} className="pairing-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <p><strong>Employee:</strong> {pairing?.id?.name}</p>
-                <p><strong>Driver:</strong> {pairingParent?.driver?.name}</p>
-              </div>
-              <button onClick={() => handleUnpair(pairing?.id?._id)}>Unpair</button>
-            </div>
-            </>
-            })}
+              {pairingParent?.passengers?.map((pairing) => {
+                return <>
+                  <div key={index} className="pairing-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <p><strong>Employee:</strong> {pairing?.id?.name}</p>
+                      <p><strong>Driver:</strong> {pairingParent?.driver?.name}</p>
+                    </div>
+                    <button onClick={() => handleUnpair(pairing?.id?._id)}>Unpair</button>
+                  </div>
+                </>
+              })}
             </>
           ))}
         </div>
