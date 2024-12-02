@@ -229,7 +229,6 @@ function AddEmployee() {
   const [updatePairId, setUpdatePairId] = useState("");
   const [organizations, setOrganization] = useState([]);
 
-  
 
   useEffect(() => {
     axios.get("http://localhost:8080/getpairs")
