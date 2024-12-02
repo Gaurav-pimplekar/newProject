@@ -545,6 +545,38 @@ router.post("/employee/register", async (req, res) => {
 });
 
 
-router.patch("/drop")
+
+router.get("/get/employees", async (req, res) => {
+  try {
+    const employees = await Employee.find({ black_list: false, driver: null });
+
+    // Check if no employees are found
+    if (employees.length === 0) {
+      return res.status(404).json({
+        message: "No employees found",
+        status: "error",
+        success: false,
+        data: null
+      });
+    }
+
+    res.status(200).json({
+      message: "Employees retrieved successfully",
+      status: "success",
+      success: true,
+      data: employees
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Error retrieving employees",
+      status: "error",
+      success: false,
+      data: error.message
+    });
+  }
+});
+
 
 export default router;

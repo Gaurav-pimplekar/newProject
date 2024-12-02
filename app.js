@@ -22,6 +22,8 @@ import { Socket } from "dgram";
 import Pair from "./module/pair.module.js";
 import mongoose from "mongoose";
 import { Employee } from "./module/employee.module.js";
+import { Driver } from "./module/driver.module.js";
+import { Vehicle } from "./module/vehicle.module.js";
 
 const app = express();
 app.use(express.json());
@@ -125,13 +127,15 @@ io.on('connection', (socket) => {
 
             if (verify) {
                 const pair = await Pair.updateOne({ "passengers.id": employeeId, "_id": pairId, "passengers.status": "waiting" }, { $set: { "passengers.$.status": "inCab" } }, { new: true })
+
+                const p = await Pair.findById(pairId)
                     .populate("vehicle")
                     .populate("driver")
                     .populate({ path: "passengers.id", model: "Employee" })
                     .populate({ path: "canceledBy.id", model: "Employee" });
 
-                io.emit(`verifyOtp_${employeeId}`, { otp: true, pair, createdAt: verify.createdAt });
-                io.emit(`verifyOtp_${driverId}`, { otp: true, pair, createdAt: verify.createdAt });
+                io.emit(`verifyOtp_${employeeId}`, { otp: true, pair: p, createdAt: verify.createdAt });
+                io.emit(`verifyOtp_${driverId}`, { otp: true, pair: p, createdAt: verify.createdAt });
             }
             else {
                 io.emit(`verifyOtp_${employeeId}`, { otp: false });
@@ -186,7 +190,7 @@ io.on('connection', (socket) => {
     socket.on("updateDriver", async ({ driverId }) => {
         try {
 
-            const pair = await Pair.findOne({driver: driverId}).populate("vehicle")
+            const pair = await Pair.findOne({ driver: driverId }).populate("vehicle")
                 .populate("driver")
                 .populate({ path: "passengers.id", model: "Employee" })
                 .populate({ path: "canceledBy.id", model: "Employee" });
@@ -203,7 +207,7 @@ io.on('connection', (socket) => {
     socket.on("updateEmployee", async ({ employeeId }) => {
         try {
 
-            const pair = await Pair.findOne({"passengers.id": employeeId}).populate("vehicle")
+            const pair = await Pair.findOne({ "passengers.id": employeeId }).populate("vehicle")
                 .populate("driver")
                 .populate({ path: "passengers.id", model: "Employee" })
                 .populate({ path: "canceledBy.id", model: "Employee" });
@@ -239,6 +243,139 @@ io.on('connection', (socket) => {
             console.error('Error dropping passenger:', err);
         }
     });
+
+
+
+
+    socket.on("addPair", async (data) => {
+        try {
+            // Find the pair by driver (assuming each driver can only have one pair)
+            const pair = await Pair.findOne({ driver: data.driver });
+    
+            // Transform incoming passengers into the required format
+            const updatedPassengers = data.passengers.map(item => {
+                return { id: item._id }; // Assuming item is an object containing the full passenger data
+            });
+            console.log(pair);
+            // Check if the pair already has passengers
+            if (pair) {
+                // Find the current passengers in the pair
+                const currentPassengers = pair.passengers.map(p => p.id.toString()); // Convert ObjectId to string for easy comparison
+    
+                // Filter out the passengers who need to be removed (those not in the updated list)
+                const passengersToRemove = currentPassengers.filter(id => !data.passengers.some(passenger => passenger._id.toString() === id));
+    
+                // Filter out the new passengers that are not already in the pair
+                const passengersToAdd = data.passengers.filter(passenger => !currentPassengers.includes(passenger._id.toString()));
+    
+                // Remove the passengers from the Pair
+                if (passengersToRemove.length > 0) {
+                    // Remove passengers from pair
+                    await Pair.findByIdAndUpdate(pair._id, {
+                        $pull: { passengers: { id: { $in: passengersToRemove } } }
+                    });
+                    // Also update the Employee's driver field to null for removed passengers
+                    await Employee.updateMany(
+                        { _id: { $in: passengersToRemove } },
+                        { $set: { driver: null } }
+                    );
+                }
+    
+                // Add the new passengers
+                if (passengersToAdd.length > 0) {
+                    await Pair.findByIdAndUpdate(pair._id, {
+                        $push: { passengers: { $each: passengersToAdd.map(p => ({ id: p._id })) } }
+                    });
+    
+                    // Also update the Employee's driver field to the new driver for added passengers
+                    await Employee.updateMany(
+                        { _id: { $in: passengersToAdd.map(p => p._id) } },
+                        { $set: { driver: data.driver } }
+                    );
+                }
+    
+                // Update the drop trip status if it's changed
+                await Pair.findByIdAndUpdate(pair._id, {
+                    isDropTrip: data.isDropTrip,
+                    dropLocation: data.organization,
+                });
+
+
+                console.log("pair updated")
+    
+            } else {
+                // If no pair exists for the driver, create a new pair
+                const newPair = new Pair({
+                    driver: data.driver,
+                    passengers: updatedPassengers,
+                    isDropTrip: data.isDropTrip,
+                    dropLocation: data.organization
+                });
+    
+                // Save the new pair
+                await newPair.save();
+    
+                // Update the employees (passengers) with the new driver
+                await Employee.updateMany(
+                    { _id: { $in: data.passengers.map(p => p._id) } },
+                    { $set: { driver: data.driver } }
+                );
+
+
+                console.log("pair added");
+            }
+    
+            // Retrieve updated pair information to send to clients
+            const updatedPairs = await Pair.find({}).populate("vehicle")
+                .populate("driver")
+                .populate({ path: "passengers.id", model: "Employee" })
+                .populate({ path: "canceledBy.id", model: "Employee" })
+                .populate({ path: "dropLocation", model:"Location"});
+    
+            // Emit updated pair data to the frontend
+            io.emit("getPair", { pair: updatedPairs });
+    
+        } catch (error) {
+            console.log(error);
+        }
+    });
+    
+    
+    socket.on('unpair', async (pairId) => {
+        try {
+          // Find the pair to unpair
+          const pair = await Pair.findById(pairId);
+    
+          // Unpair the driver
+          const driver = await Driver.findById(pair.driver._id);
+          driver.paired = false;
+          await driver.save();
+    
+          // Unpair the vehicle
+          const vehicle = await Vehicle.findById(pair.vehicle._id);
+          vehicle.paired = false;
+          await vehicle.save();
+    
+          // Unpair the passengers (set their driver to null)
+          for (let passenger of pair.passengers) {
+            const passengerObj = await Employee.findById(passenger.id);
+            passengerObj.driver = null;
+            await passengerObj.save();
+          }
+    
+          // Remove the pair
+          await Pair.findByIdAndDelete(pairId);
+    
+          // Emit updated pairs list
+          const updatedPairs = await Pair.find().populate('driver vehicle passengers');
+          io.emit('updatedPairs', { pairs: updatedPairs });  // Send updated pairs to frontend
+    
+        } catch (error) {
+          console.error("Error during unpairing:", error);
+        }
+      });
+
+
 
     // Handle disconnections
     socket.on('disconnect', () => {

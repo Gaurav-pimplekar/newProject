@@ -5,7 +5,7 @@ import { getAllLocations, createLocation } from '../controller/location.controll
 const router = express.Router();
 
 // Define routes
-router.get('/location/:userId', getAllLocations); // Get all locations for a specific user
+router.get('/location', getAllLocations); // Get all locations for a specific user
 router.post('/location', createLocation); // Create a new location
 
 export default router;

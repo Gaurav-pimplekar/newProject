@@ -43,14 +43,8 @@ const pairSchema = new mongoose.Schema({
         default: false
     },
     dropLocation: {
-        latitude: {
-            type: Number,
-            default: 18.5679
-        },
-        longitude: {
-            type: Number,
-            default: 73.9144
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Location"
     }
 }, {
     timestamps: true

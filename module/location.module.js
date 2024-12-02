@@ -2,9 +2,10 @@
 import mongoose from 'mongoose';
 
 const locationSchema = new mongoose.Schema({
-  driverId: {
-    type: String,
+  name:{
+    type:String,
     required: true,
+    unique: true
   },
   latitude: {
     type: Number,

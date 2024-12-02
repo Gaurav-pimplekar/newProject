@@ -264,7 +264,12 @@ router.post("/addPair/:vehicle/:driver", async (req, res) => {
 router.get("/getPairs", async (req, res) => {
   try {
     // Fetch pairs along with populated vehicle and driver data
-    const pairs = await Pair.find({}).populate("vehicle").populate("driver").populate({ path: "passengers.id", model: "Employee" }).populate({ path: "canceledBy.id", model: "Employee" });
+    const pairs = await Pair.find({})
+                        .populate("vehicle")
+                        .populate("driver")
+                        .populate({ path: "passengers.id", model: "Employee" })
+                        .populate({ path: "canceledBy.id", model: "Employee" })
+                        .populate({path: "dropLocation", model: "Location"});
 
     // Check if no pairs are found
     if (pairs.length === 0) {

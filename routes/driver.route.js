@@ -451,5 +451,38 @@ router.get("/get/driver/:id", async (req, res) => {
 
 
 
+//get driver whith vehicles
+router.get("/get/drivers", async (req, res) => {
+  try {
+    // Fetch drivers who are not blacklisted
+    const drivers = await Driver.find({ black_list: false, paired: true });
+
+    if (drivers.length === 0) {
+      return res.status(200).json({
+        message: "No drivers found",
+        status: "success",
+        success: true,
+        data: [],
+      });
+    }
+
+    res.status(200).json({
+      message: "Drivers retrieved successfully",
+      status: "success",
+      success: true,
+      data: drivers,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Error retrieving drivers",
+      status: "error",
+      success: false,
+      data: error.message,
+    });
+  }
+});
+
+
 
 export default router;
