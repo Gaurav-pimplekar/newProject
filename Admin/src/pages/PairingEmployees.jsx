@@ -293,6 +293,11 @@ function AddEmployee() {
     };
 
     socket.emit("addPair", tripDetails); // Emit the event to add the pair
+    socket.emit("updateDriver", {driverId : driver});
+    
+    selectedPassengers.forEach((item)=>{
+      socket.emit("updateEmployee", {employeeId : item._id});
+    })
 
     console.log("Trip Details Submitted:", tripDetails);
 
