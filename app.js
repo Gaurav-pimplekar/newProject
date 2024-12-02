@@ -329,6 +329,18 @@ io.on('connection', (socket) => {
                 });
 
 
+
+                if (pair) {
+                    updatedPassengers.forEach((item)=>{
+                        io.emit(`updateEmployee_${item.id}`, { pair });
+                    })
+                }
+    
+                if (pair) {
+                    io.emit(`updateDriver_${pair.driver._id}`, { pair });
+                }
+
+
                 console.log("pair updated")
     
             } else {
@@ -341,7 +353,7 @@ io.on('connection', (socket) => {
                 });
     
                 // Save the new pair
-                await newPair.save();
+                const pair = await newPair.save();
     
                 // Update the employees (passengers) with the new driver
                 await Employee.updateMany(
@@ -349,6 +361,15 @@ io.on('connection', (socket) => {
                     { $set: { driver: data.driver } }
                 );
 
+                if (pair) {
+                    updatedPassengers.forEach((item)=>{
+                        io.emit(`updateEmployee_${item.id}`, { pair });
+                    })
+                }
+    
+                if (pair) {
+                    io.emit(`updateDriver_${pair.driver._id}`, { pair });
+                }
 
                 console.log("pair added");
             }
@@ -362,6 +383,9 @@ io.on('connection', (socket) => {
     
             // Emit updated pair data to the frontend
             io.emit("getPair", { pair: updatedPairs });
+
+
+            
     
         } catch (error) {
             console.log(error);
