@@ -312,6 +312,10 @@ function AddEmployee() {
     setIsDropTrip(pair.isDropTrip);
     setIsUpdating(true);
     setUpdatePairId(pair._id);
+
+    socket.on(`updateDriver_${pair.driver._id}`, (data)=>{
+      console.log("socket of update driver",data);
+    })
   };
 
   const handleUnpair = (pairId) => {

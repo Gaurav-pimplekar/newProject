@@ -329,7 +329,13 @@ io.on('connection', (socket) => {
                 });
 
 
-                const p = await Pair.findById(pair._id);
+                const p = await Pair.findById(pair._id).populate("vehicle")
+                .populate("driver")
+                .populate({ path: "passengers.id", model: "Employee" })
+                .populate({ path: "canceledBy.id", model: "Employee" })
+                .populate({ path: "dropLocation", model:"Location"});
+
+
                 if (p) {
                     updatedPassengers.forEach((item)=>{
                         io.emit(`updateEmployee_${item.id}`, { pair: p });
@@ -341,7 +347,7 @@ io.on('connection', (socket) => {
                 }
 
 
-                console.log("pair updated")
+                console.log("pair updated", p)
     
             } else {
                 // If no pair exists for the driver, create a new pair
@@ -371,7 +377,7 @@ io.on('connection', (socket) => {
                     io.emit(`updateDriver_${pair.driver._id}`, { pair });
                 }
 
-                console.log("pair added");
+                console.log("pair added", pair);
             }
     
             // Retrieve updated pair information to send to clients
@@ -382,7 +388,7 @@ io.on('connection', (socket) => {
                 .populate({ path: "dropLocation", model:"Location"});
     
             // Emit updated pair data to the frontend
-            io.emit("getPair", { pairs: updatedPairs, pair,  });
+            io.emit("getPair", { pair: updatedPairs  });
 
 
             
