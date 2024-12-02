@@ -329,15 +329,15 @@ io.on('connection', (socket) => {
                 });
 
 
-
-                if (pair) {
+                const p = await Pair.findById(pair._id);
+                if (p) {
                     updatedPassengers.forEach((item)=>{
-                        io.emit(`updateEmployee_${item.id}`, { pair });
+                        io.emit(`updateEmployee_${item.id}`, { pair: p });
                     })
                 }
     
-                if (pair) {
-                    io.emit(`updateDriver_${pair.driver._id}`, { pair });
+                if (p) {
+                    io.emit(`updateDriver_${pair.driver._id}`, { pair: p });
                 }
 
 
@@ -382,7 +382,7 @@ io.on('connection', (socket) => {
                 .populate({ path: "dropLocation", model:"Location"});
     
             // Emit updated pair data to the frontend
-            io.emit("getPair", { pair: updatedPairs });
+            io.emit("getPair", { pairs: updatedPairs, pair,  });
 
 
             
