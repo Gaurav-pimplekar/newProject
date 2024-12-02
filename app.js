@@ -284,7 +284,7 @@ io.on('connection', (socket) => {
             const updatedPassengers = data.passengers.map(item => {
                 return { id: item._id }; // Assuming item is an object containing the full passenger data
             });
-            console.log(pair);
+            console.log("----------------",updatedPassengers);
             // Check if the pair already has passengers
             if (pair) {
                 // Find the current passengers in the pair
