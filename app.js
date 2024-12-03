@@ -109,9 +109,8 @@ wsApp.ws("/ws", (ws, req) => {
       case "driverArrived":
         try {
           const { employeeId } = message.data;
-          ws.send(`Arrive_${employeeId}`, {
-            message: "driver arrive at your location",
-          });
+          users[employeeId].send(JSON.stringify({event:"Arrive", data:{ message:"driver trip has started" }}));
+          
         } catch (err) {
           console.error("Error notifying driver arrival:", err);
         }
@@ -124,7 +123,8 @@ wsApp.ws("/ws", (ws, req) => {
           // Save OTP to database
           const otp2 = await Otp.create({ employeeId, otp });
 
-          ws.send(`otpSent_${employeeId}`, { otp, createdAt: otp2.createdAt });
+          users[employeeId].send(JSON.stringify({event:"otpSend", data:{ otp, createdAt: otp2.createdAt }}));
+
         } catch (err) {
           console.error("Error sending OTP:", err);
         }
@@ -173,7 +173,7 @@ wsApp.ws("/ws", (ws, req) => {
       case "noShowMore":
         try {
           const { employeeId } = message.data;
-          ws.send(`noShowMore_${employeeId}`, { noShow: true });
+          users[employeeId].send(JSON.stringify({event:"noShowMore", data:{ noShow: true }}));
         } catch (error) {
           console.error("Error no show passenger:", error);
         }
@@ -181,6 +181,7 @@ wsApp.ws("/ws", (ws, req) => {
       case "sendLocation":
         try {
           const { long, late, pairId } = message.data;
+          
           ws.send(`getLocation_${pairId}`, { long, late });
         } catch (error) {
           console.error("Error on send location", error);
@@ -212,7 +213,7 @@ wsApp.ws("/ws", (ws, req) => {
             .populate({ path: "canceledBy.id", model: "Employee" });
 
           if (pair) {
-            ws.send(`updateDriver_${driverId}`, { pair });
+            users[driverId].send(JSON.stringify({data : { pair }}));
           }
         } catch (error) {
           console.log(error);
@@ -228,7 +229,7 @@ wsApp.ws("/ws", (ws, req) => {
             .populate({ path: "canceledBy.id", model: "Employee" });
 
           if (pair) {
-            ws.send(`updateEmployee_${employeeId}`, { pair });
+            users[employeeId].send(JSON.stringify({data : { pair }}));
           }
         } catch (error) {
           console.log(error);
