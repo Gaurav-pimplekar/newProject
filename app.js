@@ -92,6 +92,19 @@ wsApp.ws("/ws", (ws, req) => {
         }
         break;
 
+      case "register":
+        try {
+            const {id} = message;
+
+            users[id] = ws;
+
+            console.log('user register successfully');
+            
+        } catch (error) {
+            console.log(error);
+        }
+        break;
+
       case "driverArrived":
         try {
           const { employeeId } = message.data;
