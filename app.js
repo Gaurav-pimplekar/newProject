@@ -24,18 +24,14 @@ import mongoose, { isValidObjectId } from "mongoose";
 import { Employee } from "./module/employee.module.js";
 import { Driver } from "./module/driver.module.js";
 import { Vehicle } from "./module/vehicle.module.js";
+import expressWs from "express-ws";
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-const server = http.createServer(app); // Create HTTP server
-const io = new Server(server, {
-    cors: {
-        origin: "*", // Specify allowed origins
-        methods: ["GET", "POST"], // Specify allowed methods
-    },
-}); // Initialize Socket.io with the server
+const expressWsInstance = expressWs(app);
+const { app: wsApp } = expressWsInstance;
 
 
 app.use(employeeRouter);
@@ -55,13 +51,16 @@ const port = process.env.PORT;
 // Store socket ids to emit messages to specific users
 let users = {};
 
-// When a new socket connects
-io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
+const stringToJson = (data)=>{
+    return JSON.stringify(data);
+}
 
+const JsonToString = (data)=>{
+    return JSON.parse(data);
+}
 
-    // Event: Trip starts
-    socket.on('startTrip', async (pairId) => {
+wsApp.ws('/', (ws, req)=>{
+    ws.on('startTrip', async (pairId) => {
         try {
             // Find the trip using Pair ID
             const pair = await Pair.findById(pairId);
@@ -70,10 +69,7 @@ io.on('connection', (socket) => {
                 await pair.save();
 
                 const pairId = pair._id;
-                users = {
-                    ...users,
-                    [pairId]: socket.id
-                }
+                
 
                 // await Location.create({driverId, latitude, longitude})
 
@@ -81,9 +77,9 @@ io.on('connection', (socket) => {
 
 
                 // Notify the driver and passengers
-                io.emit(`tripStarted_${pair.driver._id}`, { message: 'Your trip has started.' });
+                ws.send(`tripStarted_${pair.driver._id}`, { message: 'Your trip has started.' });
                 pair.passengers.forEach((passenger) => {
-                    io.emit(`tripStarted_${passenger?.id}`, { message: 'Your trip has started.' });
+                    ws.send(`tripStarted_${passenger?.id}`, { message: 'Your trip has started.' });
                 });
                 console.log(`Trip started for pairId: ${pairId}`);
             }
@@ -93,16 +89,16 @@ io.on('connection', (socket) => {
     });
 
     // Event: Driver arrives at pickup location
-    socket.on('driverArrived', async (employeeId) => {
+    ws.on('driverArrived', async (employeeId) => {
         try {
-            io.emit(`Arrive_${employeeId}`, { message: "driver arrive at your location" })
+            ws.send(`Arrive_${employeeId}`, { message: "driver arrive at your location" })
         } catch (err) {
             console.error('Error notifying driver arrival:', err);
         }
     });
 
     // Event: Send OTP to passenger
-    socket.on('sendOtp', async ({ employeeId }) => {
+    ws.on('sendOtp', async ({ employeeId }) => {
         try {
 
             // Generate a 6-digit OTP
@@ -111,7 +107,7 @@ io.on('connection', (socket) => {
             // Save OTP to database
             const otp2 = await Otp.create({ employeeId, otp });
 
-            io.emit(`otpSent_${employeeId}`, { otp, createdAt: otp2.createdAt });
+            ws.send(`otpSent_${employeeId}`, { otp, createdAt: otp2.createdAt });
 
         } catch (err) {
             console.error('Error sending OTP:', err);
@@ -119,7 +115,7 @@ io.on('connection', (socket) => {
     });
 
     // Event: Verify OTP
-    socket.on('verifyOtp', async ({ otp, employeeId, driverId, pairId }) => {
+    ws.on('verifyOtp', async ({ otp, employeeId, driverId, pairId }) => {
         try {
 
             const verify = await Otp.findOne({ employeeId, otp });
@@ -136,13 +132,13 @@ io.on('connection', (socket) => {
 
                 
 
-                io.emit(`verifyOtp_${employeeId}`, { otp: true, pair: p, createdAt: verify.createdAt });
-                io.emit(`verifyOtp_${driverId._id}`, { otp: true, pair: p, createdAt: verify.createdAt });
+                ws.send(`verifyOtp_${employeeId}`, { otp: true, pair: p, createdAt: verify.createdAt });
+                ws.send(`verifyOtp_${driverId._id}`, { otp: true, pair: p, createdAt: verify.createdAt });
             }
             else {
                 console.log("verifyOtp_", employeeId, driverId)
-                io.emit(`verifyOtp_${employeeId}`, { otp: false });
-                io.emit(`verifyOtp_${driverId._id}`, { otp: false });
+                ws.send(`verifyOtp_${employeeId}`, { otp: false });
+                ws.send(`verifyOtp_${driverId._id}`, { otp: false });
             }
 
         } catch (err) {
@@ -151,10 +147,10 @@ io.on('connection', (socket) => {
     });
 
 
-    socket.on(`noShowMore`, async (employeeId) => {
+    ws.on(`noShowMore`, async (employeeId) => {
         try {
 
-            io.emit(`noShowMore_${employeeId}`, { noShow: true });
+            ws.send(`noShowMore_${employeeId}`, { noShow: true });
 
         } catch (error) {
             console.error('Error no show passenger:', error);
@@ -162,10 +158,10 @@ io.on('connection', (socket) => {
     })
 
 
-    socket.on("sendLocation", async ({ long, late, pairId }) => {
+    ws.on("sendLocation", async ({ long, late, pairId }) => {
         try {
 
-            io.emit(`getLocation_${pairId}`, { long, late });
+            ws.send(`getLocation_${pairId}`, { long, late });
 
         } catch (error) {
             console.error("Error on send location", error);
@@ -173,7 +169,7 @@ io.on('connection', (socket) => {
     })
 
 
-    socket.on("pairEmployee", async ({ pairId }) => {
+    ws.on("pairEmployee", async ({ pairId }) => {
         try {
 
             const pair = await Pair.findById(pairId).populate("vehicle")
@@ -182,7 +178,7 @@ io.on('connection', (socket) => {
                 .populate({ path: "canceledBy.id", model: "Employee" });
 
             if (pair) {
-                io.emit(`updatePair_${pairId}`, { pair });
+                ws.send(`updatePair_${pairId}`, { pair });
             }
 
         } catch (error) {
@@ -190,7 +186,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on("updateDriver", async ({ driverId }) => {
+    ws.on("updateDriver", async ({ driverId }) => {
         try {
 
             const pair = await Pair.findOne({ driver: driverId }).populate("vehicle")
@@ -199,7 +195,7 @@ io.on('connection', (socket) => {
                 .populate({ path: "canceledBy.id", model: "Employee" });
 
             if (pair) {
-                io.emit(`updateDriver_${driverId}`, { pair });
+                ws.send(`updateDriver_${driverId}`, { pair });
             }
 
         } catch (error) {
@@ -207,7 +203,7 @@ io.on('connection', (socket) => {
         }
     })
 
-    socket.on("updateEmployee", async ({ employeeId }) => {
+    ws.on("updateEmployee", async ({ employeeId }) => {
         try {
 
             const pair = await Pair.findOne({ "passengers.id": employeeId }).populate("vehicle")
@@ -216,7 +212,7 @@ io.on('connection', (socket) => {
                 .populate({ path: "canceledBy.id", model: "Employee" });
 
             if (pair) {
-                io.emit(`updateEmployee_${employeeId}`, { pair });
+                ws.send(`updateEmployee_${employeeId}`, { pair });
             }
 
         } catch (error) {
@@ -225,7 +221,7 @@ io.on('connection', (socket) => {
     })
 
     // Event: Driver drops off passenger
-    socket.on('driverDropPassenger', async ({pairId, passengerId}) => {
+    ws.on('driverDropPassenger', async ({pairId, passengerId}) => {
         try {
             console.log("id",pairId, "+++++++", passengerId);
             // Validate pairId and passengerId
@@ -259,8 +255,8 @@ io.on('connection', (socket) => {
                     console.log(`Passenger ${passengerId} has been dropped for pairId: ${pairId}`);
     
                     // Emit the events to notify the passenger and driver
-                    io.emit(`driverDropped_${passengerId}`, { message: 'You have been dropped off.' });
-                    io.emit('updateDriver', { driverId: pair.driver?._id });
+                    ws.send(`driverDropped_${passengerId}`, { message: 'You have been dropped off.' });
+                    ws.send('updateDriver', { driverId: pair.driver?._id });
                 } else {
                     console.error('Passenger not found in pair');
                 }
@@ -275,9 +271,10 @@ io.on('connection', (socket) => {
 
 
 
-    socket.on("addPair", async (data) => {
+    ws.on("addPair", async (data) => {
         try {
             // Find the pair by driver (assuming each driver can only have one pair)
+            data = JsonToString(data);
             const pair = await Pair.findOne({ driver: data.driver });
     
             // Transform incoming passengers into the required format
@@ -338,12 +335,12 @@ io.on('connection', (socket) => {
 
                 if (p) {
                     p.passengers.forEach((item)=>{
-                        io.emit(`updateEmployee_${item._id}`, { pair: p });
+                        ws.send(`updateEmployee_${item._id}`, { pair: p });
                     })
                 }
     
                 if (p) {
-                    io.emit(`updateDriver_${pair.driver._id}`, { pair: p });
+                    ws.send(`updateDriver_${pair.driver._id}`, { pair: p });
                 }
 
 
@@ -369,12 +366,12 @@ io.on('connection', (socket) => {
 
                 if (pair) {
                     updatedPassengers.forEach((item)=>{
-                        io.emit(`updateEmployee_${item.id}`, { pair });
+                        ws.send(`updateEmployee_${item.id}`, { pair });
                     })
                 }
     
                 if (pair) {
-                    io.emit(`updateDriver_${pair.driver._id}`, { pair });
+                    ws.send(`updateDriver_${pair.driver._id}`, { pair });
                 }
 
                 console.log("pair added", pair);
@@ -388,7 +385,7 @@ io.on('connection', (socket) => {
                 .populate({ path: "dropLocation", model:"Location"});
     
             // Emit updated pair data to the frontend
-            io.emit("getPair", { pair: updatedPairs  });
+            ws.send("getPair", { pair: updatedPairs  });
 
 
             
@@ -399,7 +396,7 @@ io.on('connection', (socket) => {
     });
     
     
-    socket.on('unpair', async (pairId) => {
+    ws.on('unpair', async (pairId) => {
         try {
           // Find the pair to unpair
           const pair = await Pair.findById(pairId);
@@ -426,7 +423,7 @@ io.on('connection', (socket) => {
     
           // Emit updated pairs list
           const updatedPairs = await Pair.find().populate('driver vehicle passengers');
-          io.emit('updatedPairs', { pairs: updatedPairs });  // Send updated pairs to frontend
+          ws.send('updatedPairs', { pairs: updatedPairs });  // Send updated pairs to frontend
     
         } catch (error) {
           console.error("Error during unpairing:", error);
@@ -436,7 +433,7 @@ io.on('connection', (socket) => {
 
 
     // Handle disconnections
-    socket.on('disconnect', () => {
+    ws.on('disconnect', () => {
         console.log('A user disconnected:', socket.id);
         // Remove user from the users object
         for (let userId in users) {
@@ -446,10 +443,11 @@ io.on('connection', (socket) => {
             }
         }
     });
-});
+})
 
 
-server.listen(port, () => {
+
+app.listen(port, () => {
     console.log("app listening on port " + port);
 })
 

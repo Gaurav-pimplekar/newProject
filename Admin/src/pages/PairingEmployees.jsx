@@ -214,6 +214,10 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import "../styles/pe.css"
 
+
+const WS_URL = "ws://145.223.21.202:8091/ws";
+
+
 const socket = io("http://145.223.21.202:8091/", {
   transports: ['websocket', 'polling'],
 });
@@ -230,8 +234,25 @@ function AddEmployee() {
   const [organizations, setOrganization] = useState([]);
 
   const formRef = useRef(null);
+  const socketRef = useRef(null);
 
   useEffect(() => {
+
+    socketRef.current = new WebSocket('ws://localhost:8080/');
+
+    socketRef.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log("Received from server:", data);
+
+      if (data.event === "getPair") {
+        setPairs(data.data.pair);  // Update pairs with the latest data
+      }
+    };
+
+    socketRef.current.onclose = () => {
+      console.log('Disconnected from WebSocket server');
+    };
+
     axios.get("https://worldtriplink.com/ets/getpairs")
       .then((response) => setPairs(response.data.data))
       .catch((err) => alert(err.message));
@@ -244,19 +265,20 @@ function AddEmployee() {
       .then((response) => setOrganization(response.data?.data?.locations))
       .catch((err) => alert(err.message));
 
-    // Listen for updates to pairs from the server
-    socket.on("getPair", (data) => {
-      console.log(data.pair)
-      setPairs(data.pair);  // Update the pairs state with the latest data
-    });
+    // // Listen for updates to pairs from the server
+    // socket.on("getPair", (data) => {
+    //   console.log(data.pair)
+    //   setPairs(data.pair);  // Update the pairs state with the latest data
+    // });
 
-    socket.on("updatedPairs", (data) => {
-      setPairs(data.pairs);  // Update the pairs state with the latest data
-    });
+    // socket.on("updatedPairs", (data) => {
+    //   setPairs(data.pairs);  // Update the pairs state with the latest data
+    // });
 
     // Cleanup the socket listener when the component is unmounted
     return () => {
-      socket.off("getPair");
+      // socket.off("getPair");.
+      socketRef.current.close();
     };
   }, []);
 
@@ -293,16 +315,26 @@ function AddEmployee() {
       isDropTrip: isDropTrip,
     };
 
-    socket.emit("addPair", tripDetails); // Emit the event to add the pair
-    socket.emit("updateDriver", { driverId: selectedDriver.driver });
+    socketRef.current = new WebSocket('ws://localhost:8080/');
+    console.log(socketRef.current);
 
-    selectedPassengers.forEach((item) => {
-      socket.emit("updateEmployee", { employeeId: item._id });
-    })
+    // Ensure the WebSocket connection is open before sending messages
+    if (socketRef.current) {
+      // Send the trip details to the server
+      socketRef.current.send(JSON.stringify({ event: 'addPair', data: tripDetails }));
 
-    console.log("Trip Details Submitted:", tripDetails);
+      // Send the driver update
+      socketRef.current.send(JSON.stringify({ event: 'updateDriver', data: { driverId: selectedDriver.driver } }));
 
+      // Send each passenger update
+      selectedPassengers.forEach((item) => {
+        socketRef.current.send(JSON.stringify({ event: 'updateEmployee', data: { employeeId: item._id } }));
+      });
 
+      console.log("Trip Details Submitted:", tripDetails);
+    } else {
+      console.log("WebSocket connection is not open.");
+    }
 
     // Reset form values after submit
     resetForm();
