@@ -5,7 +5,6 @@
 // import { get_pair_employee_and_driver, get_pair_vehicle_and_driver, pair_employee_and_driver, search_employee, unpairEmployee } from "../storage/adminStorage";
 // import socket from "../utils/socket";
 
-
 // const AddEmployee = () => {
 //   const [drivers, setDrivers] = useState([]);
 //   const [employees, setEmployees] = useState([]);
@@ -31,14 +30,10 @@
 
 //     socket.emit("pairEmployee", { pairId: driver._id });
 
-
-
 //     dispatch(get_pair_employee_and_driver());
 //     dispatch(get_pair_vehicle_and_driver());
 //     setIsModalOpen(false);
 //   };
-
-
 
 //   const handleUnpair = (id) => {
 
@@ -51,8 +46,6 @@
 //     // dispatch(get_pair_employee_and_driver());
 //     // dispatch(get_pair_vehicle_and_driver());
 //   };
-
-
 
 //   useEffect(() => {
 //     dispatch(get_pair_employee_and_driver());
@@ -202,25 +195,14 @@
 
 // export default AddEmployee;
 
-
-
-
-
-
 //####################################################################################################
 
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
-import "../styles/pe.css"
-
+import "../styles/pe.css";
 
 const WS_URL = "ws://145.223.21.202:8091/ws";
-
-
-const socket = io("http://145.223.21.202:8091/", {
-  transports: ['websocket', 'polling'],
-});
 
 function AddEmployee() {
   const [pairs, setPairs] = useState([]);
@@ -237,31 +219,40 @@ function AddEmployee() {
   const socketRef = useRef(null);
 
   useEffect(() => {
+    socketRef.current = new WebSocket("ws://192.168.1.11:8080/ws");
 
-    socketRef.current = new WebSocket('ws://localhost:8080/');
+    socketRef.current.onopen = (daa) => {
+      console.log("WebSocket connected", daa);
+    };
 
     socketRef.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log("Received from server:", data);
-
-      if (data.event === "getPair") {
-        setPairs(data.data.pair);  // Update pairs with the latest data
+      const message = JSON.parse(event.data)
+      if(message.event === "getPair") {
+        console.log(message.data, "++++++++++++++++++++++++++++++++++++++++++")
+        setPairs(message.data.pair)
       }
-    };
+     }
 
     socketRef.current.onclose = () => {
-      console.log('Disconnected from WebSocket server');
+      console.log("Disconnected from WebSocket server");
+      // setIsSocketConnected(false); // Update socket connection state
+      // Try reconnecting
+      setTimeout(() => {
+        socketRef.current = new WebSocket("ws://192.168.1.11:8080/ws"); // Recreate WebSocket connection
+      }, 3000); // Retry connection after 3 seconds
     };
-
-    axios.get("https://worldtriplink.com/ets/getpairs")
+    axios
+      .get("https://worldtriplink.com/ets/getpairs")
       .then((response) => setPairs(response.data.data))
       .catch((err) => alert(err.message));
 
-    axios.get("https://worldtriplink.com/ets/get/employees")
+    axios
+      .get("https://worldtriplink.com/ets/get/employees")
       .then((response) => setPassengers(response.data.data))
       .catch((err) => alert(err.message));
 
-    axios.get("https://worldtriplink.com/ets/location")
+    axios
+      .get("https://worldtriplink.com/ets/location")
       .then((response) => setOrganization(response.data?.data?.locations))
       .catch((err) => alert(err.message));
 
@@ -276,32 +267,37 @@ function AddEmployee() {
     // });
 
     // Cleanup the socket listener when the component is unmounted
-    return () => {
-      // socket.off("getPair");.
-      socketRef.current.close();
-    };
+    // return () => {
+    //   // socket.off("getPair");.
+    //   socketRef.current.close();
+    // };
   }, []);
 
   const handleDriverChange = (e) => setSelectedDriver(e.target.value);
 
   const handlePassengerChange = (e) => {
     const selectedOptions = Array.from(e.target.selectedOptions);
-    const selectedPassengersArray = selectedOptions.map(option => {
+    const selectedPassengersArray = selectedOptions.map((option) => {
       const passengerId = option.value;
-      return passengers.find(passenger => passenger._id === passengerId);
+      return passengers.find((passenger) => passenger._id === passengerId);
     });
 
-    setSelectedPassengers(prevSelected => [
+    setSelectedPassengers((prevSelected) => [
       ...prevSelected,
-      ...selectedPassengersArray.filter(passenger => !prevSelected.includes(passenger)),
+      ...selectedPassengersArray.filter(
+        (passenger) => !prevSelected.includes(passenger)
+      ),
     ]);
   };
 
   const handleRemovePassenger = (passengerId) => {
-    setSelectedPassengers(selectedPassengers.filter(passenger => passenger._id !== passengerId));
+    setSelectedPassengers(
+      selectedPassengers.filter((passenger) => passenger._id !== passengerId)
+    );
   };
 
-  const handleOrganizationChange = (e) => setSelectedOrganization(e.target.value);
+  const handleOrganizationChange = (e) =>
+    setSelectedOrganization(e.target.value);
 
   const handleDropTripToggle = () => setIsDropTrip(!isDropTrip);
 
@@ -314,21 +310,30 @@ function AddEmployee() {
       organization: selectedOrganization,
       isDropTrip: isDropTrip,
     };
-
-    socketRef.current = new WebSocket('ws://localhost:8080/');
     console.log(socketRef.current);
-
     // Ensure the WebSocket connection is open before sending messages
-    if (socketRef.current) {
+    if (socketRef.current.readyState === WebSocket.OPEN) {
       // Send the trip details to the server
-      socketRef.current.send(JSON.stringify({ event: 'addPair', data: tripDetails }));
+      socketRef.current.send(
+        JSON.stringify({ event: "addPair", data: tripDetails })
+      );
 
       // Send the driver update
-      socketRef.current.send(JSON.stringify({ event: 'updateDriver', data: { driverId: selectedDriver.driver } }));
+      socketRef.current.send(
+        JSON.stringify({
+          event: "updateDriver",
+          data: { driverId: selectedDriver.driver },
+        })
+      );
 
       // Send each passenger update
       selectedPassengers.forEach((item) => {
-        socketRef.current.send(JSON.stringify({ event: 'updateEmployee', data: { employeeId: item._id } }));
+        socketRef.current.send(
+          JSON.stringify({
+            event: "updateEmployee",
+            data: { employeeId: item._id },
+          })
+        );
       });
 
       console.log("Trip Details Submitted:", tripDetails);
@@ -342,25 +347,26 @@ function AddEmployee() {
 
   const handleUpdate = (pair) => {
     setSelectedDriver(pair.driver._id);
-    setSelectedPassengers(pair.passengers.map(p => p.id));
-    const selectedOrg = organizations.find(org => org.name === pair.dropLocation.name);
+    setSelectedPassengers(pair.passengers.map((p) => p.id));
+    const selectedOrg = organizations.find(
+      (org) => org.name === pair.dropLocation.name
+    );
     setSelectedOrganization(selectedOrg ? selectedOrg._id : "");
     setIsDropTrip(pair.isDropTrip);
     setIsUpdating(true);
     setUpdatePairId(pair._id);
 
-
     if (formRef.current) {
-      formRef.current.scrollIntoView({ behavior: 'smooth' });
+      formRef.current.scrollIntoView({ behavior: "smooth" });
     }
 
-    socket.on(`updateDriver_${pair.driver._id}`, (data) => {
-      console.log("socket of update driver", data);
-    })
+    // socket.on(`updateDriver_${pair.driver._id}`, (data) => {
+    //   console.log("socket of update driver", data);
+    // })
   };
 
   const handleUnpair = (pairId) => {
-    socket.emit("unpair", pairId);
+    // socket.emit("unpair", pairId);
   };
 
   // Reset the form to default state after submit or update
@@ -380,7 +386,12 @@ function AddEmployee() {
         {/* Driver Selection */}
         <div>
           <label htmlFor="driver">Select Driver:</label>
-          <select className="pair-form-select" id="driver" value={selectedDriver} onChange={handleDriverChange}>
+          <select
+            className="pair-form-select"
+            id="driver"
+            value={selectedDriver}
+            onChange={handleDriverChange}
+          >
             <option value="">Select a driver</option>
             {pairs.map((pair) => (
               <option key={pair.driver._id} value={pair.driver._id}>
@@ -393,11 +404,11 @@ function AddEmployee() {
         {/* Passenger Selection (Multiple) */}
         <div>
           <label htmlFor="passengers">Select Passengers:</label>
-          <select className="pair-form-select"
+          <select
+            className="pair-form-select"
             id="passengers"
-            value={selectedPassengers.map(passenger => passenger._id)}
+            value={selectedPassengers.map((passenger) => passenger._id)}
             onChange={handlePassengerChange}
-
           >
             <option>Select Passengers</option>
             {passengers.map((passenger) => (
@@ -432,7 +443,8 @@ function AddEmployee() {
         {/* Organization Selection */}
         <div>
           <label htmlFor="organization">Select Organization:</label>
-          <select className="pair-form-select"
+          <select
+            className="pair-form-select"
             id="organization"
             value={selectedOrganization}
             onChange={handleOrganizationChange}
@@ -460,7 +472,9 @@ function AddEmployee() {
 
         {/* Submit Button */}
         <div>
-          <button className="button-p" type="submit">{isUpdating ? "Update Trip" : "Submit Trip"}</button>
+          <button className="button-p" type="submit">
+            {isUpdating ? "Update Trip" : "Submit Trip"}
+          </button>
         </div>
       </form>
 
@@ -470,14 +484,18 @@ function AddEmployee() {
         <div className="form-cards">
           {pairs.map((pair) => (
             <div key={pair._id} className="form-card">
-              <h3>Vehicle: {pair.vehicle ? pair.vehicle.name : 'N/A'}</h3>
-              <p><strong>Driver:</strong> {pair.driver ? pair.driver.name : 'N/A'}</p>
+              <h3>Vehicle: {pair.vehicle ? pair.vehicle.name : "N/A"}</h3>
+              <p>
+                <strong>Driver:</strong>{" "}
+                {pair.driver ? pair.driver.name : "N/A"}
+              </p>
               <div className="form-passengers">
                 <strong>Passengers:</strong>
                 {pair.passengers.length > 0 ? (
                   pair.passengers.map((passenger, index) => (
                     <div key={index} className="form-passenger">
-                      {passenger.id ? passenger.id.name : 'Unknown'} - {passenger.status}
+                      {passenger.id ? passenger.id.name : "Unknown"} -{" "}
+                      {passenger.status}
                     </div>
                   ))
                 ) : (
@@ -489,12 +507,20 @@ function AddEmployee() {
               </div>
               {pair.isDropTrip && (
                 <div className="form-drop-location">
-                  <strong>Drop Location:</strong> ({pair.dropLocation?.latitude}, {pair.dropLocation?.longitude})
+                  <strong>Drop Location:</strong> ({pair.dropLocation?.latitude}
+                  , {pair.dropLocation?.longitude})
                 </div>
               )}
               <div>
-                <button className="button-p" onClick={() => handleUpdate(pair)}>Update</button>
-                <button className="button-p" onClick={() => handleUnpair(pair._id)}>Unpair</button>
+                <button className="button-p" onClick={() => handleUpdate(pair)}>
+                  Update
+                </button>
+                <button
+                  className="button-p"
+                  onClick={() => handleUnpair(pair._id)}
+                >
+                  Unpair
+                </button>
               </div>
             </div>
           ))}
