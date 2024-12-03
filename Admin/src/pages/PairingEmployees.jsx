@@ -31,7 +31,7 @@
 
 //     socket.emit("pairEmployee", { pairId: driver._id });
 
-    
+
 
 //     dispatch(get_pair_employee_and_driver());
 //     dispatch(get_pair_vehicle_and_driver());
@@ -60,7 +60,7 @@
 //   }, [])
 
 //   useEffect(() => {
-    
+
 //       socket.on("getPair", ({ pair }) => {
 //         console.log("Updated pairs:", pair);
 //         setPair(pair);
@@ -70,7 +70,7 @@
 //         console.log("unpair get called by above");
 //         dispatch(unpairEmployee(id))
 //       })
-  
+
 //     return () => {
 //       socket.off("getPair");
 //     };
@@ -209,7 +209,7 @@
 
 //####################################################################################################
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 import "../styles/pe.css"
@@ -229,6 +229,7 @@ function AddEmployee() {
   const [updatePairId, setUpdatePairId] = useState("");
   const [organizations, setOrganization] = useState([]);
 
+  const formRef = useRef(null);
 
   useEffect(() => {
     axios.get("https://worldtriplink.com/ets/getpairs")
@@ -293,13 +294,15 @@ function AddEmployee() {
     };
 
     socket.emit("addPair", tripDetails); // Emit the event to add the pair
-    socket.emit("updateDriver", {driverId : selectedDriver.driver});
-    
-    selectedPassengers.forEach((item)=>{
-      socket.emit("updateEmployee", {employeeId : item._id});
+    socket.emit("updateDriver", { driverId: selectedDriver.driver });
+
+    selectedPassengers.forEach((item) => {
+      socket.emit("updateEmployee", { employeeId: item._id });
     })
 
     console.log("Trip Details Submitted:", tripDetails);
+
+
 
     // Reset form values after submit
     resetForm();
@@ -308,13 +311,19 @@ function AddEmployee() {
   const handleUpdate = (pair) => {
     setSelectedDriver(pair.driver._id);
     setSelectedPassengers(pair.passengers.map(p => p.id));
-    setSelectedOrganization(pair.organization);
+    const selectedOrg = organizations.find(org => org.name === pair.dropLocation.name);
+    setSelectedOrganization(selectedOrg ? selectedOrg._id : "");
     setIsDropTrip(pair.isDropTrip);
     setIsUpdating(true);
     setUpdatePairId(pair._id);
 
-    socket.on(`updateDriver_${pair.driver._id}`, (data)=>{
-      console.log("socket of update driver",data);
+
+    if (formRef.current) {
+      formRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    socket.on(`updateDriver_${pair.driver._id}`, (data) => {
+      console.log("socket of update driver", data);
     })
   };
 
@@ -335,7 +344,7 @@ function AddEmployee() {
   return (
     <div className="App">
       <h1>Trip Form</h1>
-      <form className="pair-form" onSubmit={handleSubmit}>
+      <form ref={formRef} className="pair-form" onSubmit={handleSubmit}>
         {/* Driver Selection */}
         <div>
           <label htmlFor="driver">Select Driver:</label>
@@ -356,7 +365,7 @@ function AddEmployee() {
             id="passengers"
             value={selectedPassengers.map(passenger => passenger._id)}
             onChange={handlePassengerChange}
-            
+
           >
             <option>Select Passengers</option>
             {passengers.map((passenger) => (
@@ -375,7 +384,7 @@ function AddEmployee() {
               {selectedPassengers.map((passenger) => (
                 <div key={passenger._id} className="selected-passenger">
                   <span>{passenger.name}</span>
-                  <button 
+                  <button
                     type="button"
                     onClick={() => handleRemovePassenger(passenger._id)}
                     className="remove-btn button-p"
