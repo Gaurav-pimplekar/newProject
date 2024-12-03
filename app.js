@@ -337,8 +337,8 @@ io.on('connection', (socket) => {
 
 
                 if (p) {
-                    updatedPassengers.forEach((item)=>{
-                        io.emit(`updateEmployee_${item.id}`, { pair: p });
+                    p.passengers.forEach((item)=>{
+                        io.emit(`updateEmployee_${item._id}`, { pair: p });
                     })
                 }
     

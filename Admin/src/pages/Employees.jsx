@@ -21,7 +21,7 @@ const EmployeeList = ({ employees }) => {
   const deleteEmp = async (id)=>{
     try {
       
-      const res = await axios.delete(`http://localhost:8080/deleteEmployee/${id}`)
+      const res = await axios.delete(`https://worldtriplink.com/ets/deleteEmployee/${id}`)
 
       dispatch(getEmployees())
 

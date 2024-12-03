@@ -470,7 +470,9 @@ router.put("/trip/complete", verifyToken, async (req, res) => {
       vehicle: req.pair.vehicle,
       passengers: req.pair.passengers,
       canceledBy: req.pair.canceledBy,
-      status: "completed"
+      status: "completed",
+      isDropTrip : req.pair?.isDropTrip,
+      dropLocation : req.pair?.dropLocation
     });
 
     console.log(req.pair);

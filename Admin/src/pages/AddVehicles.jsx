@@ -47,7 +47,7 @@ const AddCab = () => {
   // Check if the vehicle already exists in the backend
   const checkForDuplicateVehicle = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/checkVehicle/${cabData.vehicle_number}`);
+      const response = await axios.get(`https://worldtriplink.com/ets/checkVehicle/${cabData.vehicle_number}`);
       return response.data.exists; // Assuming the backend returns { exists: true/false }
     } catch (error) {
       console.error('Error checking vehicle', error);
@@ -93,7 +93,7 @@ const AddCab = () => {
       setLoading(true);
 
       // Make the POST request with form data
-      const response = await axios.post('http://localhost:8080/addVehicle', formData, {
+      const response = await axios.post('https://worldtriplink.com/ets/addVehicle', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 

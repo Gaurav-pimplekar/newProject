@@ -32,7 +32,7 @@ const DriverList = () => {
   // Handle blacklisting a driver
   const handleBlacklistDriver = async (id) => {
     try {
-      const res = await axios.patch(`http://localhost:8080/addDriverToBlockList/${id}`);
+      const res = await axios.patch(`https://worldtriplink.com/ets/addDriverToBlockList/${id}`);
       dispatch(getDrivers());
     } catch (error) {
       console.log();

@@ -17,7 +17,7 @@ const CabList = () => {
 
   const handleBlacklist = async (id) => {
     try {
-      const res = await axios.patch(`http://localhost:8080/addVehicleToBlockList/${id}`);
+      const res = await axios.patch(`https://worldtriplink.com/ets/addVehicleToBlockList/${id}`);
       dispatch(getVehicles());
     } catch (error) {
       console.error(error);
@@ -39,7 +39,7 @@ const CabList = () => {
     e.preventDefault();
     try {
       console.log('Updating vehicle with data:', formData); // Debug log
-      const res = await axios.put(`http://localhost:8080/update/vehicle/${editingVehicle._id}`, formData);
+      const res = await axios.put(`https://worldtriplink.com/ets/update/vehicle/${editingVehicle._id}`, formData);
 
       if (res.status === 200) {
         alert(res.data.message || 'Vehicle updated successfully!');

@@ -18,7 +18,7 @@ const AddEmployeeForm = () => {
   // Check for duplicate employee based on phone number or email
   const checkForDuplicateEmployee = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/checkEmployee`, {
+      const response = await axios.get(`https://worldtriplink.com/ets/checkEmployee`, {
         params: { phone_number, email }
       });
       return response.data.exists; // Assuming backend returns { exists: true/false }
@@ -55,7 +55,7 @@ const AddEmployeeForm = () => {
       setLoading(true);
 
       // Send data to the backend using axios (or your backend request method)
-      const response = await axios.post('http://localhost:8080/addEmployee', newEmployee);
+      const response = await axios.post('https://worldtriplink.com/ets/addEmployee', newEmployee);
       
       if (response.status === 200) {
         // If the request is successful, show a success message

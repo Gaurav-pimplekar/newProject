@@ -18,6 +18,14 @@ const tripSchema = new mongoose.Schema({
     canceledAt: [{
         type: Date,
     }],
+    isDropTrip:{
+        type: Boolean,
+        default: false
+    },
+    dropLocation: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Location"
+    }
 }, {
     timestamps: true,
 });

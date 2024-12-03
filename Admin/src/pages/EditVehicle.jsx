@@ -23,7 +23,7 @@ const EditVehicle = () => {
   useEffect(() => {
     const fetchVehicleDetails = async () => {
       try {
-        const res = await axios.get(`http://localhost:8080/get/vehicle/${id}`);
+        const res = await axios.get(`https://worldtriplink.com/ets/get/vehicle/${id}`);
         setVehicle(res.data?.vehicle);
         setLoading(false);
       } catch (error) {
@@ -44,7 +44,7 @@ const EditVehicle = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.put(`http://localhost:8080/update/vehicle/${id}`, vehicle);
+      const res = await axios.put(`https://worldtriplink.com/ets/update/vehicle/${id}`, vehicle);
       alert(res.data.message);
       navigate('/vehicles'); // Redirect to the vehicles list after successful update
     } catch (error) {

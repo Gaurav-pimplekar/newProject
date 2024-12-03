@@ -6,7 +6,7 @@ import axios from "axios";
 
 
 export const addVehicle = createAsyncThunk("addVehicle", async (vehicle) => {
-    const res = await axios.post("http://localhost:8080/addVehicle", vehicle);
+    const res = await axios.post("https://worldtriplink.com/ets/addVehicle", vehicle);
 
     return res.data;
 })
@@ -14,7 +14,7 @@ export const addVehicle = createAsyncThunk("addVehicle", async (vehicle) => {
 
 export const getVehicles = createAsyncThunk("getVehicles", async (_, { rejectWithValue }) => {
     try {
-        const res = await axios.get("http://localhost:8080/getVehicles");
+        const res = await axios.get("https://worldtriplink.com/ets/getVehicles");
         return res.data;
     }
 
@@ -33,7 +33,7 @@ export const getVehicles = createAsyncThunk("getVehicles", async (_, { rejectWit
 
 export const addDriver = createAsyncThunk("addDriver", async (driver) => {
     try {
-        const res = await axios.post("http://localhost:8080/addDriver", driver);
+        const res = await axios.post("https://worldtriplink.com/ets/addDriver", driver);
 
         console.log(res);
         return res.data;
@@ -45,7 +45,7 @@ export const addDriver = createAsyncThunk("addDriver", async (driver) => {
 
 export const getDrivers = createAsyncThunk("getDrivers", async (driver, { rejectWithValue }) => {
     try {
-        const res = await axios.get("http://localhost:8080/getDrivers");
+        const res = await axios.get("https://worldtriplink.com/ets/getDrivers");
 
         console.log(res);
         return res.data;
@@ -64,7 +64,7 @@ export const getDrivers = createAsyncThunk("getDrivers", async (driver, { reject
 export const search_driver = createAsyncThunk("search_driver", async (name, { rejectWithValue }) => {
     try {
         console.log(name);
-        const driver = await axios.get(`http://localhost:8080/searchDriver/${name}`);
+        const driver = await axios.get(`https://worldtriplink.com/ets/searchDriver/${name}`);
 
         // console.log(driver)
         return driver.data;
@@ -86,7 +86,7 @@ export const search_employee = createAsyncThunk("search_employee", async (name, 
             return rejectWithValue({ message: "Please enter a valid employee name" });
         }
 
-        const driver = await axios.get(`http://localhost:8080/searchEmployee/${name}`);
+        const driver = await axios.get(`https://worldtriplink.com/ets/searchEmployee/${name}`);
 
         console.log(driver)
         return driver.data;
@@ -106,7 +106,7 @@ export const search_employee = createAsyncThunk("search_employee", async (name, 
 export const search_vehicle = createAsyncThunk("search_vehicle", async (number, { rejectWithValue }) => {
     try {
         console.log(number);
-        const vehicle = await axios.get(`http://localhost:8080/searchVehicle/${number}`);
+        const vehicle = await axios.get(`https://worldtriplink.com/ets/searchVehicle/${number}`);
 
 
         return vehicle.data;
@@ -124,7 +124,7 @@ export const search_vehicle = createAsyncThunk("search_vehicle", async (number, 
 export const pair_vehicle_and_driver = createAsyncThunk("pair_vehicle_and_driver", async ({ vehicle, driver }) => {
     try {
         console.log(vehicle, driver)
-        const pair = await axios.post(`http://localhost:8080/addPair/${vehicle}/${driver}`);
+        const pair = await axios.post(`https://worldtriplink.com/ets/addPair/${vehicle}/${driver}`);
 
         return pair.data;
     } catch (error) {
@@ -135,7 +135,7 @@ export const pair_vehicle_and_driver = createAsyncThunk("pair_vehicle_and_driver
 export const pair_employee_and_driver = createAsyncThunk("pair_employee_and_driver", async ({ employee, driver }) => {
     try {
         console.log(employee, driver)
-        const pair = await axios.patch(`http://localhost:8080/pairEmployee/${employee}/${driver}`);
+        const pair = await axios.patch(`https://worldtriplink.com/ets/pairEmployee/${employee}/${driver}`);
 
         return pair.data;
     } catch (error) {
@@ -145,7 +145,7 @@ export const pair_employee_and_driver = createAsyncThunk("pair_employee_and_driv
 
 export const get_pair_employee_and_driver = createAsyncThunk("get_pair_employee_and_driver", async (_, { rejectWithValue }) => {
     try {
-        const pair = await axios.get(`http://localhost:8080/getPairedEmployee`);
+        const pair = await axios.get(`https://worldtriplink.com/ets/getPairedEmployee`);
         console.log(pair.data.data);
         return pair.data;
     } catch (error) {
@@ -163,7 +163,7 @@ export const get_pair_employee_and_driver = createAsyncThunk("get_pair_employee_
 export const unpair_vehicle_and_driver = createAsyncThunk("unpair_vehicle_and_driver", async ({ vehicle, driver, pair }) => {
     try {
         console.log(vehicle, driver, pair)
-        const unpair = await axios.put(`http://localhost:8080/unpair/${vehicle}/${driver}/${pair}`);
+        const unpair = await axios.put(`https://worldtriplink.com/ets/unpair/${vehicle}/${driver}/${pair}`);
 
         return unpair.data;
     } catch (error) {
@@ -177,7 +177,7 @@ export const get_pair_vehicle_and_driver = createAsyncThunk("get_pair_vehicle_an
     try {
 
         console.log("get pair call")
-        const pair = await axios.get(`http://localhost:8080/getPairs`);
+        const pair = await axios.get(`https://worldtriplink.com/ets/getPairs`);
 
         console.log(pair)
         return pair.data;
@@ -195,7 +195,7 @@ export const get_pair_vehicle_and_driver = createAsyncThunk("get_pair_vehicle_an
 
 export const addEmployee = createAsyncThunk("addEmployee", async (employee) => {
     try {
-        const res = await axios.post("http://localhost:8080/addEmployee", employee);
+        const res = await axios.post("https://worldtriplink.com/ets/addEmployee", employee);
 
         return res.data;
     } catch (error) {
@@ -206,7 +206,7 @@ export const addEmployee = createAsyncThunk("addEmployee", async (employee) => {
 
 export const getEmployees = createAsyncThunk("getEmployee", async () => {
     try {
-        const res = await axios.get("http://localhost:8080/getEmployees");
+        const res = await axios.get("https://worldtriplink.com/ets/getEmployees");
         console.log(res);
         return res.data;
     } catch (error) {
@@ -216,7 +216,7 @@ export const getEmployees = createAsyncThunk("getEmployee", async () => {
 
 export const getTotalVehicles = createAsyncThunk("getTotalVehicles", async () => {
     try {
-        const res = await axios.get("http://localhost:8080/totalVehicles");
+        const res = await axios.get("https://worldtriplink.com/ets/totalVehicles");
         return res.data;
     } catch (error) {
         console.log(error);
@@ -230,7 +230,7 @@ export const uploadExcelFile = createAsyncThunk(
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await axios.post('http://localhost:8080/excel/employees', formData, {
+        const response = await axios.post('https://worldtriplink.com/ets/excel/employees', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -246,7 +246,7 @@ export const unpairEmployee = createAsyncThunk(
     async (employeeId, { rejectWithValue }) => {
         console.log(employeeId);
         try {
-            const response = await axios.patch(`http://localhost:8080/unpairEmployee/${employeeId}`);
+            const response = await axios.patch(`https://worldtriplink.com/ets/unpairEmployee/${employeeId}`);
             return response.data;
         } catch (error) {
             console.log(error);

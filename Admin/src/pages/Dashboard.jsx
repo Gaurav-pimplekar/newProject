@@ -47,7 +47,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = () => {
       if (datas == null) {
-        fetch("http://localhost:8080/totalVehicles")
+        fetch("https://worldtriplink.com/ets/totalVehicles")
           .then((response) => {
             if (!response.ok) {
               throw new Error("Network response was not ok");
@@ -91,7 +91,7 @@ const Dashboard = () => {
 
   useEffect(()=>{
     const getTotal = async ()=>{
-      const res = await axios.get("http://localhost:8080/api/todaysTripsCount");
+      const res = await axios.get("https://worldtriplink.com/ets/api/todaysTripsCount");
       setTotalTrip(res?.data?.data?.totalTrips);
     }
 

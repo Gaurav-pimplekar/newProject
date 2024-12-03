@@ -17,9 +17,9 @@ const BlacklistedCabs = () => {
     // Function to unblock a blacklisted vehicle
     const handleUnblock = async (id) => {
         try {
-            const res = await axios.patch(`http://localhost:8080/unblockVehicle/${id}`);
+            const res = await axios.patch(`https://worldtriplink.com/ets/unblockVehicle/${id}`);
             // Reload vehicles after unblocking
-            const res2 = await axios.get(`http://localhost:8080/getBlockVehicles`);
+            const res2 = await axios.get(`https://worldtriplink.com/ets/getBlockVehicles`);
             // Reload vehicles after unblocking
 
 
@@ -38,7 +38,7 @@ const BlacklistedCabs = () => {
     useEffect(() => {
         const getBlock = async () => {
             try {
-                const res = await axios.get(`http://localhost:8080/getBlockVehicles`);
+                const res = await axios.get(`https://worldtriplink.com/ets/getBlockVehicles`);
                 // Reload vehicles after unblocking
 
                 console.log(res);

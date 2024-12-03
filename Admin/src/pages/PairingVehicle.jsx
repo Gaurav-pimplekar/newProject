@@ -16,7 +16,7 @@ const PairingVehicle = () => {
   useEffect(() => {
     const fetchDrivers = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/getDrivers");
+        const response = await axios.get("https://worldtriplink.com/ets/getDrivers");
         setDriver(response.data);
       } catch (error) {
         console.error("Error fetching driver data", error);

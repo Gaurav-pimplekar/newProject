@@ -17,7 +17,7 @@ const BlacklistedDrivers = () => {
   useEffect(() => {
     const getBlock = async () => {
       try {
-        const res = await axios.get(`http://localhost:8080/getBlockDrivers`);
+        const res = await axios.get(`https://worldtriplink.com/ets/getBlockDrivers`);
         // Reload vehicles after unblocking
 
 
@@ -37,9 +37,9 @@ const BlacklistedDrivers = () => {
   const handleUnblockDriver = async (id) => {
     try {
       console.log(id);
-      const res = await axios.patch(`http://localhost:8080/unblockDriver/${id}`);
+      const res = await axios.patch(`https://worldtriplink.com/ets/unblockDriver/${id}`);
 
-      const res2 = await axios.get(`http://localhost:8080/getBlockDrivers`);
+      const res2 = await axios.get(`https://worldtriplink.com/ets/getBlockDrivers`);
       // Reload vehicles after unblocking
 
 

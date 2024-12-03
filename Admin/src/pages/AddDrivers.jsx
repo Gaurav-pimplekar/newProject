@@ -64,7 +64,7 @@ const AddDriver = () => {
 
     try {
       // Send POST request to backend
-      const response = await axios.post('http://localhost:8080/addDriver', formData, {
+      const response = await axios.post('https://worldtriplink.com/ets/addDriver', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

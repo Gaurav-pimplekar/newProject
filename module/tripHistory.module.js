@@ -22,6 +22,14 @@ const tripHistoriSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Employee",
     }],
+    isDropTrip:{
+        type: Boolean,
+        default: false
+    },
+    dropLocation: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Location"
+    }
 },{
     timestamps: true
 })

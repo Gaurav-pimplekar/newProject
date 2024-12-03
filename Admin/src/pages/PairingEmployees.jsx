@@ -214,7 +214,7 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import "../styles/pe.css"
 
-const socket = io("http://localhost:8080", {
+const socket = io("http://145.223.21.202:8091/", {
   transports: ['websocket', 'polling'],
 });
 
@@ -231,15 +231,15 @@ function AddEmployee() {
 
 
   useEffect(() => {
-    axios.get("http://localhost:8080/getpairs")
+    axios.get("https://worldtriplink.com/ets/getpairs")
       .then((response) => setPairs(response.data.data))
       .catch((err) => alert(err.message));
 
-    axios.get("http://localhost:8080/get/employees")
+    axios.get("https://worldtriplink.com/ets/get/employees")
       .then((response) => setPassengers(response.data.data))
       .catch((err) => alert(err.message));
 
-    axios.get("http://localhost:8080/location")
+    axios.get("https://worldtriplink.com/ets/location")
       .then((response) => setOrganization(response.data?.data?.locations))
       .catch((err) => alert(err.message));
 

@@ -20,7 +20,7 @@ const EditDriver = () => {
   useEffect(() => {
     const fetchDriverDetails = async () => {
       try {
-        const res = await axios.get(`http://localhost:8080/get/driver/${id}`);
+        const res = await axios.get(`https://worldtriplink.com/ets/get/driver/${id}`);
         console.log(res);
         setDriver(res.data?.data);
       } catch (error) {
@@ -44,7 +44,7 @@ const EditDriver = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.patch(`http://localhost:8080/update/driver/${id}`, driver);
+      const res = await axios.patch(`https://worldtriplink.com/ets/update/driver/${id}`, driver);
       alert(res.data.message);
       navigate('/'); // Redirect to the driver list page after successful update
     } catch (error) {
