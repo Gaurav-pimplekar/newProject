@@ -77,14 +77,10 @@ wsApp.ws("/ws", (ws, req) => {
             console.log("user and driver attach successfully");
 
             // Notify the driver and passengers
-            ws.send(`tripStarted_${pair.driver._id}`, {
-              message: "Your trip has started.",
-            });
-            pair.passengers.forEach((passenger) => {
-              ws.send(`tripStarted_${passenger?.id}`, {
-                message: "Your trip has started.",
-              });
-            });
+            const driverId = pair.driver_id;
+
+            users[driverId].send(JSON.stringify({event:"tripStarted", data:{ message:"driver trip has started" }}));
+
             console.log(`Trip started for pairId: ${pairId}`);
           }
         } catch (err) {
