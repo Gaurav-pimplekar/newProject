@@ -666,7 +666,8 @@ router.put("/cancel/employee/:id", verifyToken, async (req, res) => {
       .populate("vehicle")
       .populate("driver")
       .populate({ path: "passengers.id", model: "Employee" })
-      .populate({ path: "canceledBy.id", model: "Employee" });
+      .populate({ path: "canceledBy.id", model: "Employee" })
+      .populate({ path: "dropLocation", model: "Location"});
 
     console.log(updatedPair, req.pair, req.pair._id);
 

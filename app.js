@@ -64,6 +64,7 @@ wsApp.ws("/ws", (ws, req) => {
       case "startTrip":
         try {
           const { pairId } = message.data;
+          users[`${pairId}`] = ws;
           // Find the trip using Pair ID
           const pair = await Pair.findById(pairId);
           if (pair) {
@@ -79,12 +80,23 @@ wsApp.ws("/ws", (ws, req) => {
             // Notify the driver and passengers
             const driverId = pair.driver._id;
 
-            users[driverId].send(JSON.stringify({event:"tripStarted", data:{ message:"driver trip has started" }}));
+            users[driverId].send(
+              JSON.stringify({
+                event: "tripStarted",
+                data: { message: "driver trip has started" },
+              })
+            );
 
-
-            pair.passengers.forEach(item =>{
-                users[item.id].send(JSON.stringify({event:"tripStarted", data:{ message:"driver trip has started" }}))
-            })
+            pair.passengers.forEach((item) => {
+              if (users[item.id]) {
+                users[item.id].send(
+                  JSON.stringify({
+                    event: "tripStarted",
+                    data: { message: "driver trip has started" },
+                  })
+                );
+              }
+            });
 
             console.log(`Trip started for pairId: ${pairId}`);
           }
@@ -95,22 +107,25 @@ wsApp.ws("/ws", (ws, req) => {
 
       case "register":
         try {
-            const {id} = message;
+          const { id } = message.data;
 
-            users[id] = ws;
+          users[`${id}`] = ws;
 
-            console.log('user register successfully');
-            
+          console.log("user register successfully");
         } catch (error) {
-            console.log(error);
+          console.log(error);
         }
         break;
 
       case "driverArrived":
         try {
           const { employeeId } = message.data;
-          users[employeeId].send(JSON.stringify({event:"Arrive", data:{ message:"driver trip has started" }}));
-          
+          users[employeeId].send(
+            JSON.stringify({
+              event: "Arrive",
+              data: { message: "driver trip has started" },
+            })
+          );
         } catch (err) {
           console.error("Error notifying driver arrival:", err);
         }
@@ -123,8 +138,14 @@ wsApp.ws("/ws", (ws, req) => {
           // Save OTP to database
           const otp2 = await Otp.create({ employeeId, otp });
 
-          users[employeeId].send(JSON.stringify({event:"otpSend", data:{ otp, createdAt: otp2.createdAt }}));
-
+          if (users[employeeId]) {
+            users[employeeId].send(
+              JSON.stringify({
+                event: "otpSend",
+                data: { otp, createdAt: otp2.createdAt },
+              })
+            );
+          }
         } catch (err) {
           console.error("Error sending OTP:", err);
         }
@@ -151,24 +172,44 @@ wsApp.ws("/ws", (ws, req) => {
               .populate({ path: "passengers.id", model: "Employee" })
               .populate({ path: "canceledBy.id", model: "Employee" });
 
-              users[employeeId].send(JSON.stringify({event:"verifyOtp", data:{
-                otp: true,
-                pair: p,
-                createdAt: verify.createdAt,
-              }}));
-              users[driverId].send(JSON.stringify({event:"verifyOtp", data:{
-                otp: true,
-                pair: p,
-                createdAt: verify.createdAt,
-              }}));
+            users[employeeId].send(
+              JSON.stringify({
+                event: "verifyOtp",
+                data: {
+                  otp: true,
+                  pair: p,
+                  createdAt: verify.createdAt,
+                },
+              })
+            );
+            users[driverId?._id].send(
+              JSON.stringify({
+                event: "verifyOtp",
+                data: {
+                  otp: true,
+                  pair: p,
+                  createdAt: verify.createdAt,
+                },
+              })
+            );
           } else {
             console.log("verifyOtp_", employeeId, driverId);
-            users[employeeId].send(JSON.stringify({event:"verifyOtp", data:{
-                otp: false
-              }}));
-              users[driverId].send(JSON.stringify({event:"verifyOtp", data:{
-                otp: false
-              }}));
+            users[employeeId].send(
+              JSON.stringify({
+                event: "verifyOtp",
+                data: {
+                  otp: false,
+                },
+              })
+            );
+            users[driverId?._id].send(
+              JSON.stringify({
+                event: "verifyOtp",
+                data: {
+                  otp: false,
+                },
+              })
+            );
           }
         } catch (err) {
           console.error("Error verifying OTP:", err);
@@ -177,18 +218,32 @@ wsApp.ws("/ws", (ws, req) => {
       case "noShowMore":
         try {
           const { employeeId } = message.data;
-          users[employeeId].send(JSON.stringify({event:"noShowMore", data:{ noShow: true }}));
+          if (users[employeeId]) {
+            users[employeeId].send(
+              JSON.stringify({ event: "noShowMore", data: { noShow: true } })
+            );
+          }
         } catch (error) {
           console.error("Error no show passenger:", error);
         }
         break;
       case "sendLocation":
         try {
-          const { long, late, pairId } = message.data;
-
-          users[pairId].send(JSON.stringify({event: "getLocation", data: { long, late }}));
-          
-          ws.send(`getLocation_${pairId}`, { long, late });
+          const { long, late, pair } = message.data;
+          pair.passengers.forEach((item) => {
+            
+            if (users[item.id._id]) {
+              
+            console.log("item:sdfsadffsdfasfas", item)
+              users[item.id._id].send(
+                JSON.stringify({
+                  event: "getLocation",
+                  data: { late, long },
+                })
+              );
+            }
+          });
+         
         } catch (error) {
           console.error("Error on send location", error);
         }
@@ -203,44 +258,54 @@ wsApp.ws("/ws", (ws, req) => {
             .populate({ path: "canceledBy.id", model: "Employee" });
 
           if (pair) {
-            users[pairId].send(JSON.stringify({event: 'updatePair', data: { pair } }));
+            users[pairId].send(
+              JSON.stringify({ event: "updatePair", data: { pair } })
+            );
           }
         } catch (error) {
           console.log(error);
         }
         break;
-      case "updateDriver":
-        try {
-          const { driverId } = message.data;
-          const pair = await Pair.findOne({ driver: driverId })
-            .populate("vehicle")
-            .populate("driver")
-            .populate({ path: "passengers.id", model: "Employee" })
-            .populate({ path: "canceledBy.id", model: "Employee" });
+      // case "updateDriver":
+      //   try {
+      //     const { driverId } = message.data;
+      //     const pair = await Pair.findOne({ driver: driverId })
+      //       .populate("vehicle")
+      //       .populate("driver")
+      //       .populate({ path: "passengers.id", model: "Employee" })
+      //       .populate({ path: "canceledBy.id", model: "Employee" });
 
-          if (pair) {
-            users[driverId].send(JSON.stringify({event : "updateDriver", data : { pair }}));
-          }
-        } catch (error) {
-          console.log(error);
-        }
-        break;
-      case "updateEmployee":
-        try {
-          const { employeeId } = message.data;
-          const pair = await Pair.findOne({ "passengers.id": employeeId })
-            .populate("vehicle")
-            .populate("driver")
-            .populate({ path: "passengers.id", model: "Employee" })
-            .populate({ path: "canceledBy.id", model: "Employee" });
+      //     if (pair) {
+      //       if (users[pair.driver._id]) {
+      //         users[driverId].send(
+      //           JSON.stringify({ event: "updateDriver", data: { pair } })
+      //         );
+      //       }
+      //     }
+      //   } catch (error) {
+      //     console.log(error);
+      //   }
+      //   break;
+      // case "updateEmployee":
+      //   try {
+      //     const { employeeId } = message.data;
+      //     const pair = await Pair.findOne({ "passengers.id": employeeId })
+      //       .populate("vehicle")
+      //       .populate("driver")
+      //       .populate({ path: "passengers.id", model: "Employee" })
+      //       .populate({ path: "canceledBy.id", model: "Employee" });
 
-          if (pair) {
-            users[employeeId].send(JSON.stringify({ event : "updateEmployee", data : { pair }}));
-          }
-        } catch (error) {
-          console.log(error);
-        }
-        break;
+      //     if (pair) {
+      //       if (users[employeeId]) {
+      //         users[employeeId].send(
+      //           JSON.stringify({ event: "updateEmployee", data: { pair } })
+      //         );
+      //       }
+      //     }
+      //   } catch (error) {
+      //     console.log(error);
+      //   }
+      //   break;
       case "driverDropPassenger":
         try {
           const { pairId, passengerId } = message.data;
@@ -280,9 +345,12 @@ wsApp.ws("/ws", (ws, req) => {
               );
 
               // Emit the events to notify the passenger and driver
-              users[passengerId].send(JSON.stringify({event:"driverDropped", data:{ message:"You have been dropped off." }}));
-              
-              
+              users[passengerId].send(
+                JSON.stringify({
+                  event: "driverDropped",
+                  data: { message: "You have been dropped off." },
+                })
+              );
             } else {
               console.error("Passenger not found in pair");
             }
@@ -369,24 +437,28 @@ wsApp.ws("/ws", (ws, req) => {
               .populate({ path: "canceledBy.id", model: "Employee" })
               .populate({ path: "dropLocation", model: "Location" });
 
+            console.log("padfjasdfoasfj++++++++", p, users);
             if (p) {
               p.passengers.forEach((item) => {
-                const eventName = `updateEmployee_${item.id}`;
-                ws.send(
-                  JSON.stringify({
-                    event: eventName,
-                    data: { pair },
-                  })
-                );
+                const eventName = ``;
+                if (users[item.id._id]) {
+                  console.log("employeesent :", users);
+                  users[item.id._id].send(
+                    JSON.stringify({
+                      event: "updateEmployee",
+                      data: { pair: p },
+                    })
+                  );
+                }
               });
             }
 
             if (p) {
-              const eventName = `updateDriver_${pair.driver._id}`;
-              ws.send(
+              const eventName = ``;
+              users[pair.driver._id].send(
                 JSON.stringify({
-                  event: eventName,
-                  data: { pair },
+                  event: "updateDriver",
+                  data: { pair: p },
                 })
               );
             }
@@ -412,24 +484,26 @@ wsApp.ws("/ws", (ws, req) => {
 
             if (pair) {
               updatedPassengers.forEach((item) => {
-                const eventName = `updateEmployee_${item.id}`;
-                ws.send(
-                  JSON.stringify({
-                    event: eventName,
-                    data: { pair },
-                  })
-                );
+                const eventName = `updateEmployee`;
+                if (users[item.id]) {
+                  users[item.id].send(
+                    JSON.stringify({
+                      event: eventName,
+                      data: { pair: pair },
+                    })
+                  );
+                }
               });
             }
 
             if (pair) {
-                const eventName = `updateDriver_${pair.driver._id}`;
-                ws.send(
-                  JSON.stringify({
-                    event: eventName,
-                    data: { pair },
-                  })
-                );
+              const eventName = `updateDriver`;
+              users[pair.driver._id].send(
+                JSON.stringify({
+                  event: eventName,
+                  data: { pair: pair },
+                })
+              );
             }
 
             console.log("pair added", pair);
