@@ -6,7 +6,7 @@ export const fetchTripByPairId = createAsyncThunk(
     "trip/fetchTripByPairId",
     async (pairId) => {
         try {
-            const response = await axios.get(`http://localhost:8091:8080/trips/pair/${pairId}`);
+            const response = await axios.get(`http://localhost:8091/trips/pair/${pairId}`);
 
             console.log(response)
             return response.data;
@@ -32,7 +32,7 @@ export const completeTrip = createAsyncThunk(
 
 // Async thunk to send OTP
 export const sendOtp = createAsyncThunk('otp/sendOtp', async () => {
-    const response = await axios.post('http://localhost:8091:8080/send-otp', { email: "gpimplekar@gmail.com" });
+    const response = await axios.post('http://localhost:8091/send-otp', { email: "gpimplekar@gmail.com" });
     return response.data; // Assuming your API returns the OTP details
 });
 
@@ -42,7 +42,7 @@ export const verifyOtp = createAsyncThunk('otp/verifyOtp', async ({ email, otp }
         // Log the email and OTP to verify they are being sent correctly
         console.log('Verifying OTP for:', { email, otp });
 
-        const response = await axios.post('http://localhost:8091:8080/verify-otp', { email, otp });
+        const response = await axios.post('http://localhost:8091/verify-otp', { email, otp });
         return response.data; // Assuming your API returns verification result
     } catch (error) {
         console.error('Error verifying OTP:', error.response ? error.response.data : error.message);
@@ -56,7 +56,7 @@ export const fetchUserDetails = createAsyncThunk(
     'driver/fetchdriverDetails',
     async ({ mobileNumber }) => {
         try {
-            const response = await axios.get(`http://localhost:8091:8080/driverByNumber/${mobileNumber}`);
+            const response = await axios.get(`http://localhost:8091/driverByNumber/${mobileNumber}`);
 
             console.log(response);
             if (response.data.login == true) {
@@ -77,7 +77,7 @@ export const fetchUserDetails = createAsyncThunk(
 export const loginDriver = createAsyncThunk(
     "logindriver", async () => {
         try {
-            const res = await axios.get("http://localhost:8091:8080/login/driver", {
+            const res = await axios.get("http://localhost:8091/login/driver", {
                 headers: {
                     Authorization: localStorage.getItem("token")
                 }
