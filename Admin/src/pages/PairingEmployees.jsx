@@ -219,7 +219,7 @@ function AddEmployee() {
   const socketRef = useRef(null);
 
   useEffect(() => {
-    socketRef.current = new WebSocket("ws://192.168.1.11:8080/ws");
+    socketRef.current = new WebSocket("ws://localhost:8091:8080/ws");
 
     socketRef.current.onopen = (daa) => {
       console.log("WebSocket connected", daa);
@@ -238,7 +238,7 @@ function AddEmployee() {
       // setIsSocketConnected(false); // Update socket connection state
       // Try reconnecting
       setTimeout(() => {
-        socketRef.current = new WebSocket("ws://192.168.1.11:8080/ws"); // Recreate WebSocket connection
+        socketRef.current = new WebSocket("ws://localhost:8091:8080/ws"); // Recreate WebSocket connection
       }, 3000); // Retry connection after 3 seconds
     };
     axios
