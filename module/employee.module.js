@@ -23,15 +23,12 @@ const employeeSchema = new mongoose.Schema({
   },
   shift_time:{
     type:String,
-    require:true
   },
   pickup_location:{
     type:String,
-    require:true
   },
   drop_location:{
     type:String,
-    require:true
   },
   black_list:{
     type:Boolean,

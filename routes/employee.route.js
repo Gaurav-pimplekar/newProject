@@ -484,7 +484,7 @@ router.post("/employee/register", async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!name || !phone_number || !gender || !shift_time || !pickup_location || !drop_location || !longitude || !latitude || !password || !employeeId) {
+    if (!name || !phone_number || !gender || !longitude || !latitude || !password || !employeeId) {
       return res.status(400).json({
         message: "All required fields must be provided.",
         status: 400,
