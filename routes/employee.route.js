@@ -4,6 +4,7 @@ import Pair from "../module/pair.module.js";
 import jwt from "jsonwebtoken"
 import { verifyToken } from "../utils/jwt.js";
 import bcrypt from "bcrypt"
+import { Driver } from "../module/driver.module.js";
 
 const router = express.Router();
 
@@ -493,6 +494,16 @@ router.post("/employee/register", async (req, res) => {
       });
     }
 
+    const driver = await Driver.findOne({mobile: phone_number});
+
+    if(driver){
+      return res.status(400).json({
+        message: "Mobile number already exist as a driver",
+        status: 400,
+        success: false,
+        data: null,
+      });
+    }
 
     console.log(password);
     //hash password
