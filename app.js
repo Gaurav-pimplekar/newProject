@@ -162,8 +162,13 @@ wsApp.ws("/ws", (ws, req) => {
                 _id: pairId,
                 "passengers.status": "waiting",
               },
-              { $set: { "passengers.$.status": "inCab" } },
-              { new: true }
+              { $set: { "passengers.$[emp].status": "inCab" } },
+              {
+                arrayFilters: [
+                  { "emp.id": employeeId, "emp.status": "waiting" },  // Condition for finding the specific passenger
+                ],
+                new: true
+              }
             );
 
             const p = await Pair.findById(pairId)
@@ -231,10 +236,10 @@ wsApp.ws("/ws", (ws, req) => {
         try {
           const { long, late, pair } = message.data;
           pair.passengers.forEach((item) => {
-            
+
             if (users[item.id._id]) {
-              
-            console.log("item:sdfsadffsdfasfas", item)
+
+              console.log("item:sdfsadffsdfasfas", item)
               users[item.id._id].send(
                 JSON.stringify({
                   event: "getLocation",
@@ -243,7 +248,7 @@ wsApp.ws("/ws", (ws, req) => {
               );
             }
           });
-         
+
         } catch (error) {
           console.error("Error on send location", error);
         }
