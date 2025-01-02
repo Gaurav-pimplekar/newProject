@@ -27,40 +27,44 @@ export const verifyToken = async (req, res, next) => {
             });
         }
 
-        const { mobile } = isCorrect;
+        const { mobile,role } = isCorrect;
 
-        const driver = await Driver.findOne({ mobile });
-        const employee = await Employee.findOne({ phone_number: mobile });
-
-        if (!driver && !employee) {
-            return res.status(404).json({
-                message: "Invalid password or mobile number",
-                status: 404,
-                success: false,
-                data: null
-            });
-        }
-
-        if (!driver) {
-            // If employee exists, attach the employee and pair information to the request
-            req.employee = employee;
-            const pair = await Pair.findOne({ "passengers.id": employee._id })
-                .populate("vehicle")
-                .populate("driver")
-                .populate({ path: "passengers.id", model: "Employee" });
-            req.pair = pair;
-            req.employee = employee
-            
-        } else {
-            // If driver exists, attach the driver and pair information to the request
-            
+        if (role == "driver") {
+            const driver = await Driver.findOne({ mobile });
+            if (!driver) {
+                return res.status(404).json({
+                    message: "Invalid password or mobile number",
+                    status: 404,
+                    success: false,
+                    data: null
+                });
+            }
             const pair = await Pair.findOne({ driver : driver._id })
                 .populate("vehicle")
                 .populate("driver")
                 .populate({ path: "passengers.id", model: "Employee" })
                 .populate({ path: "canceledBy.id", model: "Employee" });
             req.pair = pair;
-            req.driver = driver;
+            req.user = driver;
+            req.role = role;
+        }
+        else {
+            const employee = await Employee.findOne({ phone_number: mobile });
+            if (!employee) {
+                return res.status(404).json({
+                    message: "Invalid password or mobile number",
+                    status: 404,
+                    success: false,
+                    data: null
+                });
+            }
+            const pair = await Pair.findOne({ "passengers.id": employee._id })
+                .populate("vehicle")
+                .populate("driver")
+                .populate({ path: "passengers.id", model: "Employee" });
+            req.pair = pair;
+            req.user = employee;
+            req.role = role;
         }
 
         next();

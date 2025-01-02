@@ -83,7 +83,7 @@ io.on('connection', (socket) => {
                 pair.passengers.forEach((passenger) => {
                     io.emit(`tripStarted_${passenger?.id}`, { message: 'Your trip has started.' });
                 });
-                console.log(`Trip started for pairId: ${pairId}`);
+                console.log(`Trip started for pairId: ${pairId} ${pair.driver._id}`);
             }
         } catch (err) {
             console.error('Error starting trip:', err);

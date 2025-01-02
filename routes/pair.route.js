@@ -296,6 +296,31 @@ router.get("/getPairs", async (req, res) => {
 
 
 
+router.get("/get/pair",verifyToken, async (req, res)=>{
+  try {
+
+    const {user, pair, role} = req;
+
+    res.json({
+      message:"single pair retrive successfully",
+      success: true,
+      status:200,
+      data:{
+        user, pair, role
+      }
+    })
+    
+  } catch (error) {
+    res.json({
+      message:error.message || "Error retreiving single pair",
+      success: false,
+      status:500,
+      data:null
+    })
+  }
+})
+
+
 router.patch("/pairEmployee/:user/:pairId", async (req, res) => {
   try {
     const { user, pairId } = req.params;

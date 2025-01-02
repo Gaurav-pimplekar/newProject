@@ -46,7 +46,7 @@ router.post('/login', async (req, res) => {
             }
 
             // Generate JWT token for the driver
-            const token =await jwt.sign({ mobile }, process.env.SECRET_KEY);
+            const token =await jwt.sign({ mobile, role:"driver" }, process.env.SECRET_KEY);
 
             // Find the paired vehicle (if any)
             const pair = await Pair.findOne({ driver: driver._id }).populate("vehicle").populate("driver");
@@ -74,7 +74,7 @@ router.post('/login', async (req, res) => {
             }
 
             // Generate JWT token for the employee
-            const token = jwt.sign({ mobile }, process.env.SECRET_KEY, { expiresIn: '1h' });
+            const token = jwt.sign({ mobile, role:"employee" }, process.env.SECRET_KEY, { expiresIn: '1h' });
 
             // Find the pair if needed (Optional, depending on the use case)
             const pair = await Pair.findOne({ passengers: employee._id }).populate("vehicle").populate("driver");
